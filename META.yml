@@ -20,7 +20,7 @@ license: bsd
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: 1.4
-name: Plack-App-Commons-Voting
+name: Plack-App-Commons-Vote
 no_index:
   directory:
     - inc
@@ -29,10 +29,12 @@ no_index:
 requires:
   English: 0
   Error::Pure: 0
+  Plack::Component::Tags: 0
+  Tags::HTML::Vote::Commons: 0
   perl: 5.8.0
 resources:
-  bugtracker: https://github.com/michal-josef-spacek/Plack-App-Commons-Voting
-  homepage: https://github.com/michal-josef-spacek/Plack-App-Commons-Voting
+  bugtracker: https://github.com/michal-josef-spacek/Plack-App-Commons-Vote
+  homepage: https://github.com/michal-josef-spacek/Plack-App-Commons-Vote
   license: http://opensource.org/licenses/bsd-license.php
-  repository: git://github.com/michal-josef-spacek/Plack-App-Commong-Voting
+  repository: git://github.com/michal-josef-spacek/Plack-App-Commong-Vote
 version: '0.01'

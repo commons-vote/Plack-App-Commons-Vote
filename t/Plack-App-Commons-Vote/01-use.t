@@ -7,8 +7,8 @@ use Test::NoWarnings;
 BEGIN {
 
 	# Test.
-	use_ok('Plack::App::Commons::Voting');
+	use_ok('Plack::App::Commons::Vote');
 }
 
 # Test.
-require_ok('Plack::App::Commons::Voting');
+require_ok('Plack::App::Commons::Vote');
