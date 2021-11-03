@@ -14,6 +14,7 @@ use Tags::HTML::Commons::Vote::Competition;
 use Tags::HTML::Commons::Vote::Competitions;
 use Tags::HTML::Commons::Vote::Vote;
 use Tags::HTML::Pre;
+use Unicode::UTF8 qw(decode_utf8);
 
 our $VERSION = 0.01;
 
@@ -82,21 +83,35 @@ sub _process_actions {
 		}
 	}
 
-	# Data.
+
+	# Load all competition data.
 	if ($self->{'page'} eq 'competitions') {
-		# TODO Fetch from database.
-		$self->{'data'}->{'competitions'} = [{
-			'name' => 'Czech Wiki Photo 2021',
-			'date_from' => '2021-11-01',
-			'date_to' => '2021-12-31',
-		}];
+		my @res = map {
+			{
+				'competition_id' => $_->competition_id,
+				'date_from' => $_->date_from,
+				'date_to' => $_->date_to,
+				'name' => decode_utf8($_->name),
+			}
+		} $self->schema->resultset('Competition')->search;
+		$self->{'data'}->{'competitions'} = \@res;
+
+	# Load competition data.
 	} elsif ($self->{'page'} eq 'competition') {
-		# TODO Fetch data for $page_id.
-		$self->{'data'}->{'competition'} = {
-			'name' => 'Czech Wiki Photo 2021',
-			'date_from' => '2021-11-01',
-			'date_to' => '2021-12-31',
-		};
+		if ($self->{'page_id'}) {
+			my $res = $self->schema->resultset('Competition')->search(undef,
+				{ competition_id => $self->{'page_id'} })->single;
+			$self->{'data'}->{'competition'} = {
+				'date_from' => $res->date_from,
+				'date_to' => $res->date_to,
+				'logo' => decode_utf8($res->logo),
+				'name' => decode_utf8($res->name),
+				'organizer' => decode_utf8($res->organizer),
+				'organizer_logo' => decode_utf8($res->organizer_logo),
+			};
+		}
+
+	# Register page.
 	} elsif ($self->{'page'} eq 'register') {
 
 	# XXX Dump content
