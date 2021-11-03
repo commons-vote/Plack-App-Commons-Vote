@@ -20,7 +20,7 @@ readme_from 'Vote.pm';
 recursive_author_tests('xt');
 requires 'English' => 0;
 requires 'Error::Pure' => 0;
-requires 'Plack::Component::Tags' => 0;
+requires 'Plack::Component::Tags::HTML' => 0;
 requires 'Tags::HTML::Vote::Commons' => 0;
 resources 'bugtracker' => 'https://github.com/michal-josef-spacek/Plack-App-Commons-Vote';
 resources 'homepage' => 'https://github.com/michal-josef-spacek/Plack-App-Commons-Vote';
