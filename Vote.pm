@@ -4,6 +4,7 @@ use base qw(Plack::Component::Tags::HTML);
 use strict;
 use warnings;
 
+use Commons::Vote::Action::Stats;
 use Data::Printer return_value => 'dump';
 use File::Spec::Functions qw(splitdir);
 use Plack::Request;
@@ -12,6 +13,7 @@ use Tags::HTML::Login::Access;
 use Tags::HTML::Login::Register;
 use Tags::HTML::Commons::Vote::Competition;
 use Tags::HTML::Commons::Vote::Competitions;
+use Tags::HTML::Commons::Vote::Newcomers;
 use Tags::HTML::Commons::Vote::Vote;
 use Tags::HTML::Pre;
 use Unicode::UTF8 qw(decode_utf8);
@@ -36,6 +38,11 @@ sub _css {
 		&& $self->{'authorize'}) {
 
 		$self->{'_html_competitions'}->process_css;
+
+	# List of newcomers.
+	} elsif ($self->{'page'} eq 'newcomers'
+		&& $self->{'authorize'}) {
+		$self->{'_html_newcomers'}->process_css;
 	# Login page.
 	} elsif ($self->{'page'} eq 'login'
 		|| ! $self->{'authorize'}) {
@@ -61,6 +68,8 @@ sub _prepare_app {
 	$self->{'_html_login_register'} = Tags::HTML::Login::Register->new(%p);
 	$self->{'_html_competition'} = Tags::HTML::Commons::Vote::Competition->new(%p);
 	$self->{'_html_competitions'} = Tags::HTML::Commons::Vote::Competitions->new(%p);
+	$self->{'_html_newcomers'}
+		= Tags::HTML::Commons::Vote::Newcomers->new(%p);
 	$self->{'_html_pre'} = Tags::HTML::Pre->new(%p);
 	$self->{'_html_vote'} = Tags::HTML::Commons::Vote::Vote->new(%p);
 
@@ -117,6 +126,13 @@ sub _process_actions {
 				'organizer' => decode_utf8($res->organizer),
 				'organizer_logo' => decode_utf8($res->organizer_logo),
 			};
+	} elsif ($self->{'page'} eq 'newcomers') {
+		if ($self->{'page_id'}) {
+			my $stats = Commons::Vote::Action::Stats->new(
+				'schema' => $self->schema,
+			);
+			$self->{'data'}->{'newcomers'}
+				= [$stats->newcomers($self->{'page_id'})];
 		}
 
 	# Register page.
@@ -148,6 +164,12 @@ sub _tags_middle {
 		&& $self->{'authorize'}) {
 
 		$self->{'_html_competitions'}->process($self->{'data'}->{'competitions'});
+
+	# List of newcomers.
+	} elsif ($self->{'page'} eq 'newcomers'
+		&& $self->{'authorize'}) {
+
+		$self->{'_html_newcomers'}->process($self->{'data'}->{'newcomers'});
 
 	# Login page.
 	} elsif ($self->{'page'} eq 'login'
