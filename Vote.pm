@@ -21,20 +21,28 @@ our $VERSION = 0.01;
 sub _css {
 	my $self = shift;
 
+	# Register page.
 	if ($self->{'page'} eq 'register') {
 		$self->{'_html_login_register'}->process_css;
+
+	# Competition page.
 	} elsif ($self->{'page'} eq 'competition'
 		&& $self->{'authorize'}) {
 
 		$self->{'_html_competition'}->process_css;
+
+	# List of competition page.
 	} elsif ($self->{'page'} eq 'competitions'
 		&& $self->{'authorize'}) {
 
 		$self->{'_html_competitions'}->process_css;
+	# Login page.
 	} elsif ($self->{'page'} eq 'login'
 		|| ! $self->{'authorize'}) {
 
 		$self->{'_html_login_access'}->process_css;
+
+	# XXX (debug) unknown page.
 	} else {
 #		$self->{'_html_pre'}->process_css;
 	}
@@ -125,20 +133,29 @@ sub _process_actions {
 sub _tags_middle {
 	my $self = shift;
 
+	# Register page.
 	if ($self->{'page'} eq 'register') {
 		$self->{'_html_login_register'}->process;
+
+	# Competition page.
 	} elsif ($self->{'page'} eq 'competition'
 		&& $self->{'authorize'}) {
 
 		$self->{'_html_competition'}->process($self->{'data'}->{'competition'});
+
+	# List of competitions page.
 	} elsif ($self->{'page'} eq 'competitions'
 		&& $self->{'authorize'}) {
 
 		$self->{'_html_competitions'}->process($self->{'data'}->{'competitions'});
+
+	# Login page.
 	} elsif ($self->{'page'} eq 'login'
 		|| ! $self->{'authorize'}) {
 
 		$self->{'_html_login_access'}->process;
+
+	# XXX (debug) Unknown.
 	} else {
 		$self->{'_html_pre'}->process($self->{'content'});
 	}
