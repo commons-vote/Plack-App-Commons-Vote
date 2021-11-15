@@ -85,7 +85,6 @@ sub _prepare_app {
 	);
 	$self->{'_html_login_access'} = Tags::HTML::Login::Access->new(%p);
 	$self->{'_html_login_register'} = Tags::HTML::Login::Register->new(%p);
-	$self->{'_html_competitions'} = Tags::HTML::Commons::Vote::Competitions->new(%p);
 	$self->{'_html_competition'}
 		= Tags::HTML::Commons::Vote::Competition->new(%p);
 	$self->{'_html_competition_form'}
@@ -93,6 +92,8 @@ sub _prepare_app {
 			%p,
 			'form_link' => '/competition_save',
 		);
+	$self->{'_html_competitions'}
+		= Tags::HTML::Commons::Vote::Competitions->new(%p);
 	$self->{'_html_main'}
 		= Tags::HTML::Commons::Vote::Main->new(%p);
 	$self->{'_html_newcomers'}
@@ -154,39 +155,27 @@ sub _process_actions {
 		}
 	}
 
-	# Load all competition data.
-	if ($self->{'page'} eq 'competitions') {
-		my @res = map {
-			{
-				'competition_id' => $_->competition_id,
-				'date_from' => $_->date_from,
-				'date_to' => $_->date_to,
-				'name' => decode_utf8($_->name),
-			}
-		} $self->schema->resultset('Competition')->search;
-		$self->{'data'}->{'competitions'} = \@res;
 	# Main page.
 	if ($self->{'page'} eq 'main') {
 
 	# Load competition data.
 	} elsif ($self->{'page'} eq 'competition') {
 		if ($self->{'page_id'}) {
-			my $res = $self->schema->resultset('Competition')->search(undef,
-				{ competition_id => $self->{'page_id'} })->single;
-			$self->{'data'}->{'competition'} = {
-				'date_from' => $res->date_from,
-				'date_to' => $res->date_to,
-				'logo' => decode_utf8($res->logo),
-				'name' => decode_utf8($res->name),
-				'organizer' => decode_utf8($res->organizer),
-				'organizer_logo' => decode_utf8($res->organizer_logo),
-			};
+			$self->{'data'}->{'competition'}
+				= $self->{'_backend'}->fetch_competition($self->{'page_id'});
+		}
+
 	# Load competition form data.
 	} elsif ($self->{'page'} eq 'competition_form') {
 		if ($self->{'page_id'}) {
 			$self->{'data'}->{'competition_form'}
 				= $self->{'_backend'}->fetch_competition($self->{'page_id'});
 		}
+
+	# Load all competition data.
+	} elsif ($self->{'page'} eq 'competitions') {
+		$self->{'data'}->{'competitions'}
+			= [$self->{'_backend'}->fetch_competitions];
 
 	} elsif ($self->{'page'} eq 'newcomers') {
 		if ($self->{'page_id'}) {
