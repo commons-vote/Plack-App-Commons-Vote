@@ -85,8 +85,9 @@ sub _prepare_app {
 	);
 	$self->{'_html_login_access'} = Tags::HTML::Login::Access->new(%p);
 	$self->{'_html_login_register'} = Tags::HTML::Login::Register->new(%p);
-	$self->{'_html_competition'} = Tags::HTML::Commons::Vote::Competition->new(%p);
 	$self->{'_html_competitions'} = Tags::HTML::Commons::Vote::Competitions->new(%p);
+	$self->{'_html_competition'}
+		= Tags::HTML::Commons::Vote::Competition->new(%p);
 	$self->{'_html_competition_form'}
 		= Tags::HTML::Commons::Vote::CompetitionForm->new(
 			%p,
