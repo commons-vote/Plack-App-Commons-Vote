@@ -177,6 +177,7 @@ sub _process_actions {
 		$self->{'data'}->{'competitions'}
 			= [$self->{'_backend'}->fetch_competitions];
 
+	# List newcomers
 	} elsif ($self->{'page'} eq 'newcomers') {
 		if ($self->{'page_id'}) {
 			my $stats = Commons::Vote::Action::Stats->new(
