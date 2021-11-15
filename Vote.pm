@@ -5,6 +5,7 @@ use strict;
 use warnings;
 
 use Commons::Vote::Action::Stats;
+use Commons::Vote::Backend;
 use Data::Printer return_value => 'dump';
 use File::Spec::Functions qw(splitdir);
 use Plack::Request;
@@ -74,6 +75,10 @@ sub _css {
 sub _prepare_app {
 	my $self = shift;
 
+	$self->{'_backend'} = Commons::Vote::Backend->new(
+		'schema' => $self->schema,
+	);
+
 	my %p = (
 		'css' => $self->css,
 		'tags' => $self->tags,
@@ -111,6 +116,7 @@ sub _process_actions {
 	}
 
 	$self->{'authorize'} = 1;
+	$self->{'user_id'} = 1;
 	if (! $self->{'authorize'}) {
 		my $user = $req->parameters->{'username'};
 		my $pass = $req->parameters->{'password'};
@@ -121,6 +127,31 @@ sub _process_actions {
 		}
 	}
 
+	# Save competition.
+	# XXX authorization?
+	if ($self->{'page'} eq 'competition_save') {
+		my $competition = $self->{'_backend'}->save_competition({
+			'created_by' => $self->{'user_id'},
+			'date_from' => $req->parameters->{'date_from'},
+			'date_to' => $req->parameters->{'date_to'},
+			'logo' => $req->parameters->{'logo'},
+			'name' => $req->parameters->{'competition_name'},
+			'number_of_votes' => $req->parameters->{'number_of_votes'},
+			'organizer' => $req->parameters->{'organizer'},
+			'organizer_logo' => $req->parameters->{'organizer_logo'},
+		});
+		my @sections = split m/\n/ms, $req->parameters->{'sections'};
+		if ($competition->id) {
+			$self->{'page'} = 'competition';
+			$self->{'page_id'} = $competition->id;
+
+			# Redirect.
+			$self->_redirect('/competition/'.$competition->id);
+		} else {
+			$self->{'page'} = 'competition_form';
+			# TODO Values from form.
+		}
+	}
 
 	# Load all competition data.
 	if ($self->{'page'} eq 'competitions') {
@@ -223,6 +254,21 @@ sub _tags_middle {
 	} else {
 		$self->{'_html_pre'}->process($self->{'content'});
 	}
+
+	return;
+}
+
+sub _redirect {
+	my ($self, $location) = @_;
+
+	$self->psgi_app([
+		'303',
+		[
+			'Location' => $location,
+			'Content-Type' => 'text/plain',
+		],
+		['Saved and Moved'],
+	]);
 
 	return;
 }
