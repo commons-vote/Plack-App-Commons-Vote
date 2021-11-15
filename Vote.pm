@@ -14,6 +14,7 @@ use Tags::HTML::Login::Register;
 use Tags::HTML::Commons::Vote::Competition;
 use Tags::HTML::Commons::Vote::CompetitionForm;
 use Tags::HTML::Commons::Vote::Competitions;
+use Tags::HTML::Commons::Vote::Main;
 use Tags::HTML::Commons::Vote::Newcomers;
 use Tags::HTML::Commons::Vote::Vote;
 use Tags::HTML::Pre;
@@ -45,6 +46,12 @@ sub _css {
 		&& $self->{'authorize'}) {
 
 		$self->{'_html_competitions'}->process_css;
+
+	# Main page.
+	} elsif ($self->{'page'} eq 'main'
+		&& $self->{'authorize'}) {
+
+		$self->{'_html_main'}->process_css;
 
 	# List of newcomers.
 	} elsif ($self->{'page'} eq 'newcomers'
@@ -80,6 +87,8 @@ sub _prepare_app {
 			%p,
 			'form_link' => '/competition_save',
 		);
+	$self->{'_html_main'}
+		= Tags::HTML::Commons::Vote::Main->new(%p);
 	$self->{'_html_newcomers'}
 		= Tags::HTML::Commons::Vote::Newcomers->new(%p);
 	$self->{'_html_pre'} = Tags::HTML::Pre->new(%p);
@@ -98,7 +107,7 @@ sub _process_actions {
 		$self->{'page'} = $1;
 		$self->{'page_id'} = $2 if $2;
 	} else {
-		$self->{'page'} = 'unknown';
+		$self->{'page'} = 'main';
 	}
 
 	$self->{'authorize'} = 1;
@@ -124,6 +133,8 @@ sub _process_actions {
 			}
 		} $self->schema->resultset('Competition')->search;
 		$self->{'data'}->{'competitions'} = \@res;
+	# Main page.
+	if ($self->{'page'} eq 'main') {
 
 	# Load competition data.
 	} elsif ($self->{'page'} eq 'competition') {
@@ -189,6 +200,12 @@ sub _tags_middle {
 		&& $self->{'authorize'}) {
 
 		$self->{'_html_competitions'}->process($self->{'data'}->{'competitions'});
+
+	# Main page.
+	} elsif ($self->{'page'} eq 'main'
+		&& $self->{'authorize'}) {
+
+		$self->{'_html_main'}->process;
 
 	# List of newcomers.
 	} elsif ($self->{'page'} eq 'newcomers'
