@@ -12,6 +12,7 @@ use Plack::Util::Accessor qw(schema);
 use Tags::HTML::Login::Access;
 use Tags::HTML::Login::Register;
 use Tags::HTML::Commons::Vote::Competition;
+use Tags::HTML::Commons::Vote::CompetitionForm;
 use Tags::HTML::Commons::Vote::Competitions;
 use Tags::HTML::Commons::Vote::Newcomers;
 use Tags::HTML::Commons::Vote::Vote;
@@ -32,6 +33,12 @@ sub _css {
 		&& $self->{'authorize'}) {
 
 		$self->{'_html_competition'}->process_css;
+
+	# Competition form page.
+	} elsif ($self->{'page'} eq 'competition_form'
+		&& $self->{'authorize'}) {
+
+		$self->{'_html_competition_form'}->process_css;
 
 	# List of competition page.
 	} elsif ($self->{'page'} eq 'competitions'
@@ -68,6 +75,11 @@ sub _prepare_app {
 	$self->{'_html_login_register'} = Tags::HTML::Login::Register->new(%p);
 	$self->{'_html_competition'} = Tags::HTML::Commons::Vote::Competition->new(%p);
 	$self->{'_html_competitions'} = Tags::HTML::Commons::Vote::Competitions->new(%p);
+	$self->{'_html_competition_form'}
+		= Tags::HTML::Commons::Vote::CompetitionForm->new(
+			%p,
+			'form_link' => '/competition_save',
+		);
 	$self->{'_html_newcomers'}
 		= Tags::HTML::Commons::Vote::Newcomers->new(%p);
 	$self->{'_html_pre'} = Tags::HTML::Pre->new(%p);
@@ -126,6 +138,13 @@ sub _process_actions {
 				'organizer' => decode_utf8($res->organizer),
 				'organizer_logo' => decode_utf8($res->organizer_logo),
 			};
+	# Load competition form data.
+	} elsif ($self->{'page'} eq 'competition_form') {
+		if ($self->{'page_id'}) {
+			$self->{'data'}->{'competition_form'}
+				= $self->{'_backend'}->fetch_competition($self->{'page_id'});
+		}
+
 	} elsif ($self->{'page'} eq 'newcomers') {
 		if ($self->{'page_id'}) {
 			my $stats = Commons::Vote::Action::Stats->new(
@@ -158,6 +177,12 @@ sub _tags_middle {
 		&& $self->{'authorize'}) {
 
 		$self->{'_html_competition'}->process($self->{'data'}->{'competition'});
+
+	# Competition form page.
+	} elsif ($self->{'page'} eq 'competition_form'
+		&& $self->{'authorize'}) {
+
+		$self->{'_html_competition_form'}->process($self->{'data'}->{'competition_form'});
 
 	# List of competitions page.
 	} elsif ($self->{'page'} eq 'competitions'
