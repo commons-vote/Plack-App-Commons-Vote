@@ -30,7 +30,7 @@ requires:
   English: 0
   Error::Pure: 0
   Plack::Component::Tags: 0
-  Tags::HTML::Vote::Commons: 0
+  Tags::HTML::Commons::Vote: 0
   perl: 5.8.0
 resources:
   bugtracker: https://github.com/michal-josef-spacek/Plack-App-Commons-Vote
