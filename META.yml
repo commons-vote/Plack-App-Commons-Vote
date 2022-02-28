@@ -27,10 +27,15 @@ no_index:
     - t
     - xt
 requires:
+  Commons::Vote::Action::Stats: 0
+  Commons::Vote::Backend: 0
   English: 0
   Error::Pure: 0
   Plack::Component::Tags::HTML: 0
   Tags::HTML::Commons::Vote: 0
+  Tags::HTML::Form::Image::Grid: 0
+  Tags::HTML::Login::Register: 0
+  Tags::HTML::Pre: 0
   perl: 5.8.0
 resources:
   bugtracker: https://github.com/michal-josef-spacek/Plack-App-Commons-Vote
