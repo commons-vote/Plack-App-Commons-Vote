@@ -38,7 +38,7 @@ requires:
   Tags::HTML::Pre: 0
   perl: 5.8.0
 resources:
-  bugtracker: https://github.com/michal-josef-spacek/Plack-App-Commons-Vote
+  bugtracker: https://github.com/michal-josef-spacek/Plack-App-Commons-Vote/issues
   homepage: https://github.com/michal-josef-spacek/Plack-App-Commons-Vote
   license: http://opensource.org/licenses/bsd-license.php
   repository: git://github.com/michal-josef-spacek/Plack-App-Commong-Vote
