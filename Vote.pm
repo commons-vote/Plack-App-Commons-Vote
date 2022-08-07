@@ -136,11 +136,14 @@ sub _process_actions {
 			'created_by' => $self->{'user_id'},
 			'date_from' => $req->parameters->{'date_from'},
 			'date_to' => $req->parameters->{'date_to'},
+			'jury_voting' => $req->parameters->{'jury_voting'},
+			'jury_max_marking_number' => $req->parameters->{'jury_max_marking_number'},
 			'logo' => $req->parameters->{'logo'},
 			'name' => $req->parameters->{'competition_name'},
 			'number_of_votes' => $req->parameters->{'number_of_votes'},
 			'organizer' => $req->parameters->{'organizer'},
 			'organizer_logo' => $req->parameters->{'organizer_logo'},
+			'public_voting' => $req->parameters->{'public_voting'},
 		});
 		my @sections = split m/\n/ms, $req->parameters->{'sections'};
 		# TODO Save sections.
