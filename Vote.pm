@@ -130,6 +130,10 @@ sub _process_actions {
 		$self->{'page'} = 'main';
 	}
 
+	# TODO Email from auth.
+	$self->{'login_email'} = 'michal.josef.spacek@wikimedia.cz';
+	$self->{'login_user'} = $self->backend->fetch_person({'email' => $self->{'login_email'}});
+
 	# Save competition.
 	if ($self->{'page'} eq 'competition_save') {
 		my $competition = $self->backend->save_competition({
