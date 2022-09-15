@@ -5,6 +5,7 @@ use strict;
 use warnings;
 
 use Commons::Vote::Action::Stats;
+use Data::Commons::Vote::Competition;
 use Data::Printer return_value => 'dump';
 use File::Spec::Functions qw(splitdir);
 use Plack::Request;
@@ -75,6 +76,18 @@ sub _css {
 	return;
 }
 
+sub _date_from_params {
+	my ($self, $date_from_params) = @_;
+
+	my ($year, $month, $day) = split m/-/ms, $date_from_params;
+
+	return DateTime->new(
+		'day' => $day,
+		'month' => $month,
+		'year' => $year,
+	);
+}
+
 sub _prepare_app {
 	my $self = shift;
 
@@ -136,19 +149,23 @@ sub _process_actions {
 
 	# Save competition.
 	if ($self->{'page'} eq 'competition_save') {
-		my $competition = $self->backend->save_competition({
-			'created_by' => $self->{'user_id'},
-			'date_from' => $req->parameters->{'date_from'},
-			'date_to' => $req->parameters->{'date_to'},
-			'jury_voting' => $req->parameters->{'jury_voting'},
-			'jury_max_marking_number' => $req->parameters->{'jury_max_marking_number'},
-			'logo' => $req->parameters->{'logo'},
-			'name' => $req->parameters->{'competition_name'},
-			'number_of_votes' => $req->parameters->{'number_of_votes'},
-			'organizer' => $req->parameters->{'organizer'},
-			'organizer_logo' => $req->parameters->{'organizer_logo'},
-			'public_voting' => $req->parameters->{'public_voting'},
-		});
+		my $dt_from = $self->_date_from_params($req->parameters->{'date_from'});
+		my $dt_to = $self->_date_from_params($req->parameters->{'date_to'});
+		my $competition = $self->backend->save_competition(
+			Data::Commons::Vote::Competition->new(
+				'created_by' => $self->{'user_id'},
+				'dt_from' => $dt_from,
+				'dt_to' => $dt_to,
+				'jury_voting' => $req->parameters->{'jury_voting'} eq 'on' ? 1 : 0,
+				'jury_max_marking_number' => $req->parameters->{'jury_max_marking_number'},
+				'logo' => $req->parameters->{'logo'},
+				'name' => $req->parameters->{'competition_name'},
+				'number_of_votes' => $req->parameters->{'number_of_votes'},
+				'organizer' => $req->parameters->{'organizer'},
+				'organizer_logo' => $req->parameters->{'organizer_logo'},
+				'public_voting' => $req->parameters->{'public_voting'} eq 'on' ? 1 : 0,
+			),
+		);
 		my @sections = split m/\n/ms, $req->parameters->{'sections'};
 		# TODO Save sections.
 		if ($competition->id) {
