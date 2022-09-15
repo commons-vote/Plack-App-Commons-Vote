@@ -6,7 +6,9 @@ use warnings;
 
 use Commons::Vote::Action::Stats;
 use Data::Commons::Vote::Competition;
+use Data::FormValidator;
 use Data::Printer return_value => 'dump';
+use Error::Pure qw(err);
 use File::Spec::Functions qw(splitdir);
 use Plack::Request;
 use Plack::Util::Accessor qw(backend schema);
@@ -149,6 +151,14 @@ sub _process_actions {
 
 	# Save competition.
 	if ($self->{'page'} eq 'competition_save') {
+		my $parameters_hr = $req->parameters->as_hashref;
+		my $profile_hr = {
+			'required' => ['date_from', 'date_to', 'name',],
+		};
+		my $results = Data::FormValidator->check($parameters_hr, $profile_hr);
+		if ($results->has_invalid) {
+			err "Paramters are invalid.";
+		}
 		my $dt_from = $self->_date_from_params($req->parameters->{'date_from'});
 		my $dt_to = $self->_date_from_params($req->parameters->{'date_to'});
 		my $competition = $self->backend->save_competition(
