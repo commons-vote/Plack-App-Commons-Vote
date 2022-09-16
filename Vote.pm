@@ -283,7 +283,7 @@ sub _tags_middle {
 	my $self = shift;
 
 	$self->{'_html_menu'}->process({
-		'login_name' => $self->{'user_name'},
+		'login_name' => $self->{'login_user'}->name || $self->{'login_user'}->wm_username;
 		'section' => $self->{'section'},
 	});
 
