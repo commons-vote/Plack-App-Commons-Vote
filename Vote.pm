@@ -137,6 +137,11 @@ sub _process_actions {
 
 	my $req = Plack::Request->new($env);
 
+	# Cleanup.
+	delete $self->{'data'};
+	delete $self->{'page'};
+	delete $self->{'page_id'};
+
 	# Process PATH_INFO.
 	if ($req->path_info =~ m/^\/(\w+)\/?(\d*)$/ms) {
 		$self->{'page'} = $1;
