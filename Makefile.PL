@@ -19,7 +19,6 @@ perl_version 5.008;
 readme_from 'Vote.pm';
 recursive_author_tests('xt');
 requires 'Activity::Commons::Vote::Stats' => 0;
-requires 'Commons::Vote::Backend' => 0;
 requires 'Data::FormValidator' => 0;
 requires 'English' => 0;
 requires 'Error::Pure' => 0;
