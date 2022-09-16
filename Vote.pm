@@ -163,7 +163,7 @@ sub _process_actions {
 		my $dt_to = $self->_date_from_params($req->parameters->{'date_to'});
 		my $competition = $self->backend->save_competition(
 			Data::Commons::Vote::Competition->new(
-				'created_by' => $self->{'user_id'},
+				'created_by' => $self->{'login_user'},
 				'dt_from' => $dt_from,
 				'dt_to' => $dt_to,
 				'jury_voting' => $req->parameters->{'jury_voting'} eq 'on' ? 1 : 0,
@@ -193,7 +193,7 @@ sub _process_actions {
 	# XXX authorization?
 	} elsif ($self->{'page'} eq 'section_save') {
 		my $section = $self->backend->save_section({
-			'created_by' => $self->{'user_id'},
+			'created_by' => $self->{'login_user'},
 			'name' => $req->parameters->{'section_name'},
 			'number_of_votes' => $req->parameters->{'number_of_votes'},
 		});
