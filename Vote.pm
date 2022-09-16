@@ -233,7 +233,7 @@ sub _process_actions {
 	# Load all competition data.
 	} elsif ($self->{'page'} eq 'competitions') {
 		$self->{'data'}->{'competitions'}
-			= [$self->backend->fetch_competitions({'created_by' => $self->{'login_user'}->id})];
+			= [$self->backend->fetch_competitions({'created_by_id' => $self->{'login_user'}->id})];
 
 	# List newcomers
 	} elsif ($self->{'page'} eq 'newcomers') {
