@@ -213,6 +213,8 @@ sub _process_actions {
 	if ($self->{'page'} eq 'main') {
 		# XXX
 		$self->{'section'} = $self->{'_html_main'}->{'text'}->{'eng'}->{'my_competitions'};
+		$self->{'data'}->{'competitions'}
+			= [$self->backend->fetch_competitions({'created_by_id' => $self->{'login_user'}->id})];
 
 	# Load competition data.
 	} elsif ($self->{'page'} eq 'competition') {
@@ -307,7 +309,7 @@ sub _tags_middle {
 
 	# Main page.
 	} elsif ($self->{'page'} eq 'main') {
-		$self->{'_html_main'}->process;
+		$self->{'_html_main'}->process($self->{'data'}->{'competitions'});
 
 	# List of newcomers.
 	} elsif ($self->{'page'} eq 'newcomers') {
