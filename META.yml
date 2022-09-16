@@ -27,7 +27,7 @@ no_index:
     - t
     - xt
 requires:
-  Commons::Vote::Action::Stats: 0
+  Activity::Commons::Vote::Stats: 0
   Commons::Vote::Backend: 0
   Data::FormValidator: 0
   English: 0

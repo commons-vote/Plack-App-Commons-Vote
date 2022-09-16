@@ -4,7 +4,7 @@ use base qw(Plack::Component::Tags::HTML);
 use strict;
 use warnings;
 
-use Commons::Vote::Action::Stats;
+use Activity::Commons::Vote::Stats;
 use Data::Commons::Vote::Competition;
 use Data::FormValidator;
 use Data::Printer return_value => 'dump';
@@ -234,7 +234,7 @@ sub _process_actions {
 	# List newcomers
 	} elsif ($self->{'page'} eq 'newcomers') {
 		if ($self->{'page_id'}) {
-			my $stats = Commons::Vote::Action::Stats->new(
+			my $stats = Activity::Commons::Vote::Stats->new(
 				'schema' => $self->schema,
 			);
 			$self->{'data'}->{'newcomers'}

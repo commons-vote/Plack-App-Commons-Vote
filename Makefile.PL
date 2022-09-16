@@ -18,7 +18,7 @@ name 'Plack-App-Commons-Vote';
 perl_version 5.008;
 readme_from 'Vote.pm';
 recursive_author_tests('xt');
-requires 'Commons::Vote::Action::Stats' => 0;
+requires 'Activity::Commons::Vote::Stats' => 0;
 requires 'Commons::Vote::Backend' => 0;
 requires 'Data::FormValidator' => 0;
 requires 'English' => 0;
