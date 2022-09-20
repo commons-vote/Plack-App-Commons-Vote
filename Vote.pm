@@ -4,6 +4,7 @@ use base qw(Plack::Component::Tags::HTML);
 use strict;
 use warnings;
 
+use Activity::Commons::Vote::Load;
 use Activity::Commons::Vote::Stats;
 use Data::Commons::Vote::Competition;
 use Data::FormValidator;
@@ -239,6 +240,19 @@ sub _process_actions {
 	} elsif ($self->{'page'} eq 'competitions') {
 		$self->{'data'}->{'competitions'}
 			= [$self->backend->fetch_competitions({'created_by_id' => $self->{'login_user'}->id})];
+
+	# Load competition from Wikimedia Commons.
+	} elsif ($self->{'page'} eq 'load') {
+		if ($self->{'page_id'}) {
+			my $load = Activity::Commons::Vote::Load->new(
+				'backend' => $self->backend,
+				'creator' => $self->{'login_user'},
+			);
+			my @sections = $self->backend->fetch_competition_sections($self->{'page_id'});
+			foreach my $section_id (@sections) {
+				$load->load($section_id);
+			}
+		}
 
 	# List newcomers
 	} elsif ($self->{'page'} eq 'newcomers') {
