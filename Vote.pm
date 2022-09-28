@@ -24,7 +24,6 @@ use Tags::HTML::Commons::Vote::Newcomers;
 use Tags::HTML::Commons::Vote::Section;
 use Tags::HTML::Commons::Vote::SectionForm;
 use Tags::HTML::Commons::Vote::Vote;
-use Tags::HTML::Pre;
 use Unicode::UTF8 qw(decode_utf8);
 
 our $VERSION = 0.01;
@@ -73,7 +72,9 @@ sub _css {
 
 	# XXX (debug) unknown page.
 	} else {
-#		$self->{'_html_pre'}->process_css;
+		err "Unknown page."
+			'page', $self->{'page'},
+		;
 	}
 
 	return;
@@ -120,7 +121,6 @@ sub _prepare_app {
 		);
 	$self->{'_html_newcomers'}
 		= Tags::HTML::Commons::Vote::Newcomers->new(%p);
-	$self->{'_html_pre'} = Tags::HTML::Pre->new(%p);
 	$self->{'_html_section'}
 		= Tags::HTML::Commons::Vote::Section->new(%p);
 	$self->{'_html_section_form'}
@@ -348,7 +348,6 @@ sub _tags_middle {
 
 	# XXX (debug) Unknown.
 	} else {
-		$self->{'_html_pre'}->process($self->{'content'});
 	}
 
 	return;
