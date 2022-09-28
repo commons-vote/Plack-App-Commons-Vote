@@ -71,7 +71,7 @@ sub _css {
 
 	# XXX (debug) unknown page.
 	} else {
-		err "Unknown page."
+		err "Unknown page.",
 			'page', $self->{'page'},
 		;
 	}
