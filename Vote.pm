@@ -276,6 +276,14 @@ sub _process_actions {
 		if ($self->{'page_id'}) {
 			$self->{'data'}->{'section_form'}
 				= $self->backend->fetch_section($self->{'page_id'});
+		} else {
+			my $competition_id = $req->parameters->{'competition_id'};
+			if ($competition_id) {
+				$self->{'data'}->{'competition'}
+					= $self->backend->fetch_competition($competition_id);
+			} else {
+				err "No competition id.";
+			}
 		}
 
 	# Vote page.
@@ -337,7 +345,10 @@ sub _tags_middle {
 
 	# Section form page.
 	} elsif ($self->{'page'} eq 'section_form') {
-		$self->{'_html_section_form'}->process($self->{'data'}->{'section_form'});
+		$self->{'_html_section_form'}->process(
+			$self->{'data'}->{'section_form'},
+			$self->{'data'}->{'competition'},
+		);
 
 	# Voting page.
 	} elsif ($self->{'page'} eq 'vote') {
