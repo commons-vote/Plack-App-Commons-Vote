@@ -13,7 +13,6 @@ use Error::Pure qw(err);
 use File::Spec::Functions qw(splitdir);
 use Plack::Request;
 use Plack::Util::Accessor qw(backend schema);
-use Tags::HTML::Form::Image::Grid;
 use Tags::HTML::Login::Register;
 use Tags::HTML::Commons::Vote::Competition;
 use Tags::HTML::Commons::Vote::CompetitionForm;
@@ -99,8 +98,6 @@ sub _prepare_app {
 		'css' => $self->css,
 		'tags' => $self->tags,
 	);
-	$self->{'_html_form_image_grid'}
-		= Tags::HTML::Form::Image::Grid->new(%p);
 	$self->{'_html_login_register'} = Tags::HTML::Login::Register->new(%p);
 	$self->{'_html_competition'}
 		= Tags::HTML::Commons::Vote::Competition->new(%p);

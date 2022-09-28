@@ -33,7 +33,6 @@ requires:
   Error::Pure: 0
   Plack::Component::Tags::HTML: 0
   Tags::HTML::Commons::Vote: 0
-  Tags::HTML::Form::Image::Grid: 0
   Tags::HTML::Login::Register: 0
   perl: 5.8.0
 resources:
