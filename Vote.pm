@@ -285,10 +285,8 @@ sub _process_actions {
 				'backend' => $self->backend,
 				'creator' => $self->{'login_user'},
 			);
-			my @sections = $self->backend->fetch_competition_sections($self->{'page_id'});
-			foreach my $section_id (@sections) {
-				$load->load($section_id);
-			}
+			# XXX recursive opts?
+			$load->load($self->{'page_id'});
 		}
 
 	# List newcomers
