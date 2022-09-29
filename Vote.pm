@@ -164,19 +164,41 @@ sub _process_actions {
 		}
 		my $dt_from = $self->_date_from_params($req->parameters->{'date_from'});
 		my $dt_to = $self->_date_from_params($req->parameters->{'date_to'});
+		my $jury_voting = defined $req->parameters->{'jury_voting'}
+			&& $req->parameters->{'jury_voting'} eq 'on' ? 1 : 0;
+		my ($dt_jury_voting_from, $dt_jury_voting_to);
+		if ($jury_voting) {
+			$dt_jury_voting_from = $self->_date_from_params(
+				$req->parameters->{'jury_voting_date_from'});
+			$dt_jury_voting_to = $self->_date_from_params(
+				$req->parameters->{'jury_voting_date_from'});
+		}
+		my $public_voting = defined $req->parameters->{'public_voting'}
+			&& $req->parameters->{'public_voting'} eq 'on' ? 1 : 0;
+		my ($dt_public_voting_from, $dt_public_voting_to);
+		if ($public_voting) {
+			$dt_public_voting_from = $self->_date_from_params(
+				$req->parameters->{'public_voting_date_from'});
+			$dt_public_voting_to = $self->_date_from_params(
+				$req->parameters->{'public_voting_date_from'});
+		}
 		my $competition = $self->backend->save_competition(
 			Data::Commons::Vote::Competition->new(
 				'created_by' => $self->{'login_user'},
 				'dt_from' => $dt_from,
+				'dt_jury_voting_from' => $dt_jury_voting_from,
+				'dt_jury_voting_to' => $dt_jury_voting_to,
+				'dt_public_voting_from' => $dt_public_voting_from,
+				'dt_public_voting_to' => $dt_public_voting_to,
 				'dt_to' => $dt_to,
-				'jury_voting' => $req->parameters->{'jury_voting'} eq 'on' ? 1 : 0,
-				'jury_max_marking_number' => $req->parameters->{'jury_max_marking_number'},
-				'logo' => $req->parameters->{'logo'},
+				'jury_voting' => $jury_voting,
+				'jury_max_marking_number' => $req->parameters->{'jury_max_marking_number'} || undef,
+				'logo' => $req->parameters->{'logo'} || undef,
 				'name' => $req->parameters->{'competition_name'},
-				'number_of_votes' => $req->parameters->{'number_of_votes'},
-				'organizer' => $req->parameters->{'organizer'},
-				'organizer_logo' => $req->parameters->{'organizer_logo'},
-				'public_voting' => $req->parameters->{'public_voting'} eq 'on' ? 1 : 0,
+				'number_of_votes' => $req->parameters->{'number_of_votes'} || undef,
+				'organizer' => $req->parameters->{'organizer'} || undef,
+				'organizer_logo' => $req->parameters->{'organizer_logo'} || undef,
+				'public_voting' => $public_voting,
 			),
 		);
 		if ($competition->id) {
