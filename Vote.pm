@@ -179,8 +179,6 @@ sub _process_actions {
 				'public_voting' => $req->parameters->{'public_voting'} eq 'on' ? 1 : 0,
 			),
 		);
-		my @sections = split m/\n/ms, $req->parameters->{'sections'};
-		# TODO Save sections.
 		if ($competition->id) {
 			$self->{'page'} = 'competition';
 			$self->{'page_id'} = $competition->id;
