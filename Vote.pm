@@ -215,11 +215,37 @@ sub _process_actions {
 	# Save sections.
 	# XXX authorization?
 	} elsif ($self->{'page'} eq 'section_save') {
-		my $section = $self->backend->save_section({
-			'created_by' => $self->{'login_user'},
-			'name' => $req->parameters->{'section_name'},
-			'number_of_votes' => $req->parameters->{'number_of_votes'},
-		});
+		my $parameters_hr = $req->parameters->as_hashref;
+		my $profile_hr = {
+			'required' => ['competition_id', 'section_name',],
+		};
+		my $results = Data::FormValidator->check($parameters_hr, $profile_hr);
+		if ($results->has_invalid) {
+			err "Paramters are invalid.";
+		}
+		my $competition = $self->backend->fetch_competition($req->parameters->{'competition_id'});
+		if (! $competition) {
+			err "Bad competition.";
+		}
+		my $section = $self->backend->save_section(
+			Data::Commons::Vote::Section->new(
+				'competition' => $competition,
+				'created_by' => $self->{'login_user'},
+				'logo' => $req->parameters->{'logo'} || undef,
+				'name' => $req->parameters->{'section_name'},
+				'number_of_votes' => $req->parameters->{'number_of_votes'} || undef,
+			),
+		);
+		if (defined $req->parameters->{'categories'}) {
+			foreach my $category_name (split m/\r\n/ms, $req->parameters->{'categories'}) {
+				my $category = Data::Commons::Vote::Category->new(
+					'created_by' => $self->{'login_user'},
+					'category' => $category_name,
+					'section_id' => $section->id,
+				);
+				$self->backend->save_section_category($category);
+			}
+		}
 		if ($section->id) {
 			$self->{'page'} = 'section';
 			$self->{'page_id'} = $section->id;
