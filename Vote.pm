@@ -68,12 +68,6 @@ sub _css {
 	# Vote page.
 	} elsif ($self->{'page'} eq 'vote') {
 		$self->{'_html_vote'}->process_css;
-
-	# XXX (debug) unknown page.
-	} else {
-		err "Unknown page.",
-			'page', $self->{'page'},
-		;
 	}
 
 	return;
