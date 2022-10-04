@@ -287,6 +287,9 @@ sub _process_actions {
 			);
 			# XXX recursive opts?
 			$load->load($self->{'page_id'});
+
+			# Redirect.
+			$self->_redirect('/competition/'.$self->{'page_id'});
 		}
 
 	# List newcomers
