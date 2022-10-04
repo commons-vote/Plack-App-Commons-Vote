@@ -188,7 +188,7 @@ sub _process_actions {
 				'jury_voting' => $jury_voting,
 				'jury_max_marking_number' => $req->parameters->{'jury_max_marking_number'} || undef,
 				'logo' => $req->parameters->{'logo'} || undef,
-				'name' => $req->parameters->{'competition_name'},
+				'name' => decode_utf8($req->parameters->{'competition_name'}),
 				'number_of_votes' => $req->parameters->{'number_of_votes'} || undef,
 				'organizer' => $req->parameters->{'organizer'} || undef,
 				'organizer_logo' => $req->parameters->{'organizer_logo'} || undef,
@@ -226,7 +226,7 @@ sub _process_actions {
 				'competition' => $competition,
 				'created_by' => $self->{'login_user'},
 				'logo' => $req->parameters->{'logo'} || undef,
-				'name' => $req->parameters->{'section_name'},
+				'name' => decode_utf8($req->parameters->{'section_name'}),
 				'number_of_votes' => $req->parameters->{'number_of_votes'} || undef,
 			),
 		);
