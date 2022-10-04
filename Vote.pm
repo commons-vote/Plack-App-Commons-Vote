@@ -234,7 +234,7 @@ sub _process_actions {
 			foreach my $category_name (split m/\r\n/ms, $req->parameters->{'categories'}) {
 				my $category = Data::Commons::Vote::Category->new(
 					'created_by' => $self->{'login_user'},
-					'category' => $category_name,
+					'category' => decode_utf8($category_name),
 					'section_id' => $section->id,
 				);
 				$self->backend->save_section_category($category);
