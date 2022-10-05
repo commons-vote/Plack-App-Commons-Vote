@@ -73,6 +73,17 @@ sub _css {
 	return;
 }
 
+sub _check_required_middleware {
+	my ($self, $env) = @_;
+
+	# Check use of Session before this app.
+	if (! defined $env->{'psgix.session'}) {
+		err 'No Plack::Middleware::Session present.';
+	}
+
+	return;
+}
+
 sub _date_from_params {
 	my ($self, $date_from_params) = @_;
 
@@ -126,6 +137,8 @@ sub _prepare_app {
 
 sub _process_actions {
 	my ($self, $env) = @_;
+
+	$self->_check_required_middleware($env);
 
 	my $req = Plack::Request->new($env);
 
