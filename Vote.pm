@@ -235,25 +235,35 @@ sub _process_actions {
 			$dt_public_voting_to = $self->_date_from_params(
 				$req->parameters->{'public_voting_date_from'});
 		}
-		my $competition = $self->backend->save_competition(
-			Data::Commons::Vote::Competition->new(
-				'created_by' => $self->{'login_user'},
-				'dt_from' => $dt_from,
-				'dt_jury_voting_from' => $dt_jury_voting_from,
-				'dt_jury_voting_to' => $dt_jury_voting_to,
-				'dt_public_voting_from' => $dt_public_voting_from,
-				'dt_public_voting_to' => $dt_public_voting_to,
-				'dt_to' => $dt_to,
-				'jury_voting' => $jury_voting,
-				'jury_max_marking_number' => $req->parameters->{'jury_max_marking_number'} || undef,
-				'logo' => decode_utf8($req->parameters->{'logo'}) || undef,
-				'name' => decode_utf8($req->parameters->{'competition_name'}),
-				'number_of_votes' => $req->parameters->{'number_of_votes'} || undef,
-				'organizer' => decode_utf8($req->parameters->{'organizer'}) || undef,
-				'organizer_logo' => decode_utf8($req->parameters->{'organizer_logo'}) || undef,
-				'public_voting' => $public_voting,
-			),
+		my $competition_id = $req->parameters->{'competition_id'} || undef;
+		my $competition_to_update = Data::Commons::Vote::Competition->new(
+			'created_by' => $self->{'login_user'},
+			'dt_from' => $dt_from,
+			'dt_jury_voting_from' => $dt_jury_voting_from,
+			'dt_jury_voting_to' => $dt_jury_voting_to,
+			'dt_public_voting_from' => $dt_public_voting_from,
+			'dt_public_voting_to' => $dt_public_voting_to,
+			'dt_to' => $dt_to,
+			'id' => $competition_id,
+			'jury_voting' => $jury_voting,
+			'jury_max_marking_number' => $req->parameters->{'jury_max_marking_number'} || undef,
+			'logo' => decode_utf8($req->parameters->{'logo'}) || undef,
+			'name' => decode_utf8($req->parameters->{'competition_name'}),
+			'number_of_votes' => $req->parameters->{'number_of_votes'} || undef,
+			'organizer' => decode_utf8($req->parameters->{'organizer'}) || undef,
+			'organizer_logo' => decode_utf8($req->parameters->{'organizer_logo'}) || undef,
+			'public_voting' => $public_voting,
 		);
+		my $competition;
+		if ($competition_id) {
+			$competition = $self->backend->update_competition(
+				$competition_to_update,
+			);
+		} else {
+			$competition = $self->backend->save_competition(
+				$competition_to_update,
+			);
+		}
 		if ($competition->id) {
 			$self->{'page'} = 'competition';
 			$self->{'page_id'} = $competition->id;
