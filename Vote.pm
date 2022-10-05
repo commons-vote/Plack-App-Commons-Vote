@@ -266,7 +266,6 @@ sub _process_actions {
 		}
 
 	# Save sections.
-	# XXX authorization?
 	} elsif ($self->{'page'} eq 'section_save') {
 		my $parameters_hr = $req->parameters->as_hashref;
 		my $profile_hr = {
