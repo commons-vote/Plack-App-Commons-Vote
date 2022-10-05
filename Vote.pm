@@ -11,8 +11,11 @@ use Data::FormValidator;
 use Data::Printer return_value => 'dump';
 use Error::Pure qw(err);
 use File::Spec::Functions qw(splitdir);
+use JSON::XS;
+use Plack::App::Restricted;
 use Plack::Request;
-use Plack::Util::Accessor qw(backend schema);
+use Plack::Session;
+use Plack::Util::Accessor qw(backend devel schema);
 use Tags::HTML::Login::Register;
 use Tags::HTML::Commons::Vote::Competition;
 use Tags::HTML::Commons::Vote::CompetitionForm;
@@ -96,6 +99,12 @@ sub _date_from_params {
 	);
 }
 
+sub _json {
+	my $json = JSON::XS->new;
+	$json->boolean_values(0, 1);
+	return $json->utf8->allow_nonref;
+}
+
 sub _prepare_app {
 	my $self = shift;
 
@@ -141,6 +150,7 @@ sub _process_actions {
 	$self->_check_required_middleware($env);
 
 	my $req = Plack::Request->new($env);
+	my $session = Plack::Session->new($env);
 
 	# Cleanup.
 	delete $self->{'data'};
@@ -155,9 +165,40 @@ sub _process_actions {
 		$self->{'page'} = 'main';
 	}
 
-	# TODO Email from auth.
-	$self->{'login_email'} = 'michal.josef.spacek@wikimedia.cz';
+	# OAuth2
+	$self->{'logged'} = 0;
+	my $oauth2 = $session->get('oauth2.obj');
+	if (defined $oauth2) {
+		my $service_provider = $session->get('oauth2.service_provider');
+		if ($service_provider eq 'Wikimedia') {
+			my $res = $oauth2->get('https://meta.wikimedia.org/w/rest.php/oauth2/resource/profile');
+			if ($res->is_success) {
+				my $profile_hr = _json()->decode($res->decoded_content);
+				if ($profile_hr->{'login'}) {
+					$self->{'login_email'} = $profile_hr->{'profile'}->{'email'};
+					$self->{'logged'} = 1;
+				}
+			}
+		}
+	}
+
+	# XXX Development version.
+	if ($self->devel) {
+		$self->{'logged'} = 1;
+		$self->{'login_email'} = 'michal.josef.spacek@wikimedia.cz';
+	}
+
+	# Restricted access.
+	if (! $self->{'logged'}) {
+		$self->_restricted;
+		return;
+	}
+
+	# Load data about person.
 	$self->{'login_user'} = $self->backend->fetch_person({'email' => $self->{'login_email'}});
+	if (! defined $self->{'login_user'}) {
+		# TODO Save user.
+	}
 
 	# Save competition.
 	if ($self->{'page'} eq 'competition_save') {
@@ -426,6 +467,19 @@ sub _redirect {
 		],
 		['Saved and Moved'],
 	]);
+
+	return;
+}
+
+sub _restricted {
+	my $self = shift;
+
+	$self->psgi_app(
+		Plack::App::Restricted->new(
+			'css' => $self->css,
+			'tags' => $self->tags,
+		)->to_app->(),
+	);
 
 	return;
 }
