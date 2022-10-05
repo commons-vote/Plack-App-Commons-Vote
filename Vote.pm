@@ -284,7 +284,7 @@ sub _process_actions {
 			Data::Commons::Vote::Section->new(
 				'competition' => $competition,
 				'created_by' => $self->{'login_user'},
-				'logo' => $req->parameters->{'logo'} || undef,
+				'logo' => decode_utf8($req->parameters->{'logo'}) || undef,
 				'name' => decode_utf8($req->parameters->{'section_name'}),
 				'number_of_votes' => $req->parameters->{'number_of_votes'} || undef,
 			),
