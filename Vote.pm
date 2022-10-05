@@ -174,10 +174,8 @@ sub _process_actions {
 			my $res = $oauth2->get('https://meta.wikimedia.org/w/rest.php/oauth2/resource/profile');
 			if ($res->is_success) {
 				my $profile_hr = _json()->decode($res->decoded_content);
-				if ($profile_hr->{'login'}) {
-					$self->{'login_email'} = $profile_hr->{'profile'}->{'email'};
-					$self->{'logged'} = 1;
-				}
+				$self->{'login_email'} = $profile_hr->{'email'};
+				$self->{'logged'} = 1;
 			}
 		}
 	}
