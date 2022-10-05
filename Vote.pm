@@ -128,7 +128,6 @@ sub _prepare_app {
 		= Tags::HTML::Commons::Vote::Menu->new(
 			%p,
 			'logo_url' => '/',
-			# TODO Handle logout
 			'logout_url' => '/logout',
 		);
 	$self->{'_html_newcomers'}
