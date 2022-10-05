@@ -289,15 +289,25 @@ sub _process_actions {
 		if (! $competition) {
 			err "Bad competition.";
 		}
-		my $section = $self->backend->save_section(
-			Data::Commons::Vote::Section->new(
-				'competition' => $competition,
-				'created_by' => $self->{'login_user'},
-				'logo' => decode_utf8($req->parameters->{'logo'}) || undef,
-				'name' => decode_utf8($req->parameters->{'section_name'}),
-				'number_of_votes' => $req->parameters->{'number_of_votes'} || undef,
-			),
+		my $section_id = $req->parameters->{'section_id'};
+		my $section_to_update = Data::Commons::Vote::Section->new(
+			'competition' => $competition,
+			'created_by' => $self->{'login_user'},
+			'id' => $section_id || undef,
+			'logo' => decode_utf8($req->parameters->{'logo'}) || undef,
+			'name' => decode_utf8($req->parameters->{'section_name'}),
+			'number_of_votes' => $req->parameters->{'number_of_votes'} || undef,
 		);
+		my $section;
+		if ($section_id) {
+			$section = $self->backend->update_section(
+				$section_to_update,
+			);
+		} else {
+			$section = $self->backend->save_section(
+				$section_to_update,
+			);
+		}
 		if (defined $req->parameters->{'categories'}) {
 			foreach my $category_name (split m/\r\n/ms, $req->parameters->{'categories'}) {
 				my $category = Data::Commons::Vote::Category->new(
