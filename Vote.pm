@@ -168,12 +168,13 @@ sub _process_actions {
 	# OAuth2
 	$self->{'logged'} = 0;
 	my $oauth2 = $session->get('oauth2.obj');
+	my $profile_hr = {};
 	if (defined $oauth2) {
 		my $service_provider = $session->get('oauth2.service_provider');
 		if ($service_provider eq 'Wikimedia') {
 			my $res = $oauth2->get('https://meta.wikimedia.org/w/rest.php/oauth2/resource/profile');
 			if ($res->is_success) {
-				my $profile_hr = _json()->decode($res->decoded_content);
+				$profile_hr = _json()->decode($res->decoded_content);
 				$self->{'login_email'} = $profile_hr->{'email'};
 				$self->{'logged'} = 1;
 			}
@@ -195,7 +196,13 @@ sub _process_actions {
 	# Load data about person.
 	$self->{'login_user'} = $self->backend->fetch_person({'email' => $self->{'login_email'}});
 	if (! defined $self->{'login_user'}) {
-		# TODO Save user.
+		$self->{'login_user'} = $self->backend->save_person(Data::Commons::Vote::Person->new(
+			'email' => $self->{'login_email'},
+			'wm_username' => $profile_hr->{'username'},
+			$profile_hr->{'realname'} ? (
+				'name' => $profile_hr->{'realname'},
+			) : (),
+		));
 	}
 
 	# Save competition.
