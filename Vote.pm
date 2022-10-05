@@ -308,6 +308,16 @@ sub _process_actions {
 			$self->{'page'} = 'section_form';
 			# TODO Values from form.
 		}
+
+	# Remove section.
+	} elsif ($self->{'page'} eq 'section_remove') {
+		if ($self->{'page_id'}) {
+			my $section = $self->backend->delete_section($self->{'page_id'});
+
+			# Redirect.
+			$self->_redirect('/competition/'.$section->competition->id);
+		}
+
 	}
 
 	# Main page.
