@@ -17,6 +17,7 @@ use Plack::App::Restricted;
 use Plack::Request;
 use Plack::Session;
 use Plack::Util::Accessor qw(backend devel schema);
+use Readonly;
 use Tags::HTML::Commons::Vote::Competition;
 use Tags::HTML::Commons::Vote::CompetitionForm;
 use Tags::HTML::Commons::Vote::Competitions;
@@ -27,9 +28,14 @@ use Tags::HTML::Commons::Vote::Section;
 use Tags::HTML::Commons::Vote::SectionForm;
 use Tags::HTML::Commons::Vote::Vote;
 use Tags::HTML::Image;
+use Tags::HTML::Image::Grid;
 use Tags::HTML::Login::Register;
+use Tags::HTML::Pager;
+use Tags::HTML::Pager::Utils qw(adjust_actual_page compute_index_values pages_num);
 use Unicode::UTF8 qw(decode_utf8);
 
+Readonly::Scalar our $IMAGE_GRID_WIDTH => 340;
+Readonly::Scalar our $IMAGES_ON_PAGE => 24;
 our $VERSION = 0.01;
 
 sub _css {
@@ -56,6 +62,11 @@ sub _css {
 	# View image.
 	} elsif ($self->{'page'} eq 'image') {
 		$self->{'_html_image'}->process_css;
+
+	# View images.
+	} elsif ($self->{'page'} eq 'images') {
+		$self->{'_html_pager'}->process_css;
+		$self->{'_html_images'}->process_css;
 
 	# Main page.
 	} elsif ($self->{'page'} eq 'main') {
@@ -138,6 +149,18 @@ sub _prepare_app {
 			return $self->{'_link'}->link($image->commons_name);
 		},
 	);
+	$self->{'_html_images'} = Tags::HTML::Image::Grid->new(
+		%p,
+		'img_link_cb' => sub {
+			my $image = shift;
+			return '/image/'.$image->id;
+		},
+		'img_src_cb' => sub {
+			my $image = shift;
+			return $self->{'_link'}->thumb_link($image->commons_name, $IMAGE_GRID_WIDTH);
+		},
+		'img_width' => $IMAGE_GRID_WIDTH,
+	);
 	$self->{'_html_main'}
 		= Tags::HTML::Commons::Vote::Main->new(%p);
 	$self->{'_html_menu'}
@@ -148,6 +171,14 @@ sub _prepare_app {
 		);
 	$self->{'_html_newcomers'}
 		= Tags::HTML::Commons::Vote::Newcomers->new(%p);
+	$self->{'_html_pager'} = Tags::HTML::Pager->new(
+		%p,
+		'url_page_cb' => sub {
+			my $page = shift;
+
+			return '?page_num='.$page;
+		},
+	);
 	$self->{'_html_section'}
 		= Tags::HTML::Commons::Vote::Section->new(%p);
 	$self->{'_html_section_form'}
@@ -390,6 +421,36 @@ sub _process_actions {
 			$self->{'data'}->{'image'} = $self->backend->fetch_image($self->{'page_id'});
 		}
 
+	# View images.
+	} elsif ($self->{'page'} eq 'images') {
+
+		# Section id.
+		if ($self->{'page_id'}) {
+
+			# URL parameters.
+			my $page_num = $req->parameters->{'page_num'} || 1;
+
+			# Count images.
+			$self->{'data'}->{'images_count'}
+				= $self->backend->count_section_images($self->{'page_id'});
+			my $pages = pages_num($self->{'data'}->{'images_count'}, $IMAGES_ON_PAGE);
+			my $actual_page = adjust_actual_page($page_num, $pages);
+			my ($begin_index) = compute_index_values($self->{'data'}->{'images_count'},
+				$actual_page, $IMAGES_ON_PAGE);
+
+			# Fetch selected images.
+			$self->{'data'}->{'images'} = [$self->backend->fetch_section_images($self->{'page_id'}, {
+				'offset' => $begin_index,
+				'rows' => $IMAGES_ON_PAGE,
+			})];
+
+			# Pager.
+			$self->{'data'}->{'pager'} = {
+				'actual_page' => $actual_page,
+				'pages_num' => $pages,
+			};
+		}
+
 	# Load competition from Wikimedia Commons.
 	} elsif ($self->{'page'} eq 'load') {
 		if ($self->{'page_id'}) {
@@ -487,6 +548,11 @@ sub _tags_middle {
 	# View image.
 	} elsif ($self->{'page'} eq 'image') {
 		$self->{'_html_image'}->process($self->{'data'}->{'image'});
+
+	# View images.
+	} elsif ($self->{'page'} eq 'images') {
+		$self->{'_html_images'}->process($self->{'data'}->{'images'});
+		$self->{'_html_pager'}->process($self->{'data'}->{'pager'});
 
 	# Main page.
 	} elsif ($self->{'page'} eq 'main') {

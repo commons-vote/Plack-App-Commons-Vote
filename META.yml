@@ -34,9 +34,13 @@ requires:
   JSON::XS: 0
   Plack::App::Restricted: 0
   Plack::Component::Tags::HTML: 0
+  Readonly: 0
   Tags::HTML::Commons::Vote: 0
   Tags::HTML::Image: 0
+  Tags::HTML::Image::Grid: 0
   Tags::HTML::Login::Register: 0
+  Tags::HTML::Pager: 0.04
+  Tags::HTML::Pager::Utils: 0.04
   perl: 5.8.0
 resources:
   bugtracker: https://github.com/michal-josef-spacek/Plack-App-Commons-Vote/issues
