@@ -6,6 +6,7 @@ use warnings;
 
 use Activity::Commons::Vote::Load;
 use Activity::Commons::Vote::Stats;
+use Commons::Link;
 use Data::Commons::Vote::Competition;
 use Data::FormValidator;
 use Data::Printer return_value => 'dump';
@@ -16,6 +17,7 @@ use Plack::App::Restricted;
 use Plack::Request;
 use Plack::Session;
 use Plack::Util::Accessor qw(backend devel schema);
+use Tags::HTML::Image;
 use Tags::HTML::Login::Register;
 use Tags::HTML::Commons::Vote::Competition;
 use Tags::HTML::Commons::Vote::CompetitionForm;
@@ -50,6 +52,10 @@ sub _css {
 	# List of competition page.
 	} elsif ($self->{'page'} eq 'competitions') {
 		$self->{'_html_competitions'}->process_css;
+
+	# View image.
+	} elsif ($self->{'page'} eq 'image') {
+		$self->{'_html_image'}->process_css;
 
 	# Main page.
 	} elsif ($self->{'page'} eq 'main') {
@@ -108,6 +114,9 @@ sub _json {
 sub _prepare_app {
 	my $self = shift;
 
+	# Wikimedia Commons link object.
+	$self->{'_link'} = Commons::Link->new;
+
 	my %p = (
 		'css' => $self->css,
 		'tags' => $self->tags,
@@ -122,6 +131,13 @@ sub _prepare_app {
 		);
 	$self->{'_html_competitions'}
 		= Tags::HTML::Commons::Vote::Competitions->new(%p);
+	$self->{'_html_image'} = Tags::HTML::Image->new(
+		%p,
+		'img_src_cb' => sub {
+			my $image = shift;
+			return $self->{'_link'}->link($image->commons_name);
+		},
+	);
 	$self->{'_html_main'}
 		= Tags::HTML::Commons::Vote::Main->new(%p);
 	$self->{'_html_menu'}
@@ -366,6 +382,14 @@ sub _process_actions {
 		$self->{'data'}->{'competitions'}
 			= [$self->backend->fetch_competitions({'created_by_id' => $self->{'login_user'}->id})];
 
+	# View image.
+	} elsif ($self->{'page'} eq 'image') {
+
+		# Image id.
+		if ($self->{'page_id'}) {
+			$self->{'data'}->{'image'} = $self->backend->fetch_image($self->{'page_id'});
+		}
+
 	# Load competition from Wikimedia Commons.
 	} elsif ($self->{'page'} eq 'load') {
 		if ($self->{'page_id'}) {
@@ -459,6 +483,10 @@ sub _tags_middle {
 	# List of competitions page.
 	} elsif ($self->{'page'} eq 'competitions') {
 		$self->{'_html_competitions'}->process($self->{'data'}->{'competitions'});
+
+	# View image.
+	} elsif ($self->{'page'} eq 'image') {
+		$self->{'_html_image'}->process($self->{'data'}->{'image'});
 
 	# Main page.
 	} elsif ($self->{'page'} eq 'main') {

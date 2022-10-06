@@ -26,6 +26,7 @@ requires 'JSON::XS' => 0;
 requires 'Plack::App::Restricted' => 0;
 requires 'Plack::Component::Tags::HTML' => 0;
 requires 'Tags::HTML::Commons::Vote' => 0;
+requires 'Tags::HTML::Image' => 0;
 requires 'Tags::HTML::Login::Register' => 0;
 resources 'bugtracker' => 'https://github.com/michal-josef-spacek/Plack-App-Commons-Vote/issues';
 resources 'homepage' => 'https://github.com/michal-josef-spacek/Plack-App-Commons-Vote';
