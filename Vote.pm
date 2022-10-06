@@ -17,8 +17,6 @@ use Plack::App::Restricted;
 use Plack::Request;
 use Plack::Session;
 use Plack::Util::Accessor qw(backend devel schema);
-use Tags::HTML::Image;
-use Tags::HTML::Login::Register;
 use Tags::HTML::Commons::Vote::Competition;
 use Tags::HTML::Commons::Vote::CompetitionForm;
 use Tags::HTML::Commons::Vote::Competitions;
@@ -28,6 +26,8 @@ use Tags::HTML::Commons::Vote::Newcomers;
 use Tags::HTML::Commons::Vote::Section;
 use Tags::HTML::Commons::Vote::SectionForm;
 use Tags::HTML::Commons::Vote::Vote;
+use Tags::HTML::Image;
+use Tags::HTML::Login::Register;
 use Unicode::UTF8 qw(decode_utf8);
 
 our $VERSION = 0.01;
