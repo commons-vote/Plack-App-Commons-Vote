@@ -460,6 +460,10 @@ sub _process_actions {
 			my $load = Activity::Commons::Vote::Load->new(
 				'backend' => $self->backend,
 				'creator' => $self->{'login_user'},
+				'verbose_cb' => sub {
+					my $message = shift;
+					$env->{'psgi.errors'}->print(encode_utf8($message)."\n");
+				},
 			);
 			# XXX recursive opts?
 			$load->load($self->{'page_id'});
