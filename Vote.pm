@@ -427,6 +427,9 @@ sub _process_actions {
 		# Section id.
 		if ($self->{'page_id'}) {
 
+			# Get information about section.
+			$self->{'data'}->{'section'} = $self->backend->fetch_section($self->{'page_id'});
+
 			# URL parameters.
 			my $page_num = $req->parameters->{'page_num'} || 1;
 
@@ -551,6 +554,11 @@ sub _tags_middle {
 
 	# View images.
 	} elsif ($self->{'page'} eq 'images') {
+		$self->{'tags'}->put(
+			['b', 'h1'],
+			['d', $self->{'data'}->{'section'}->name],
+			['e', 'h1'],
+		);
 		$self->{'_html_images'}->process($self->{'data'}->{'images'});
 		$self->{'_html_pager'}->process($self->{'data'}->{'pager'});
 
