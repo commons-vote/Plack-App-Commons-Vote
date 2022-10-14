@@ -186,7 +186,9 @@ sub _prepare_app {
 			%p,
 			'form_link' => '/section_save',
 		);
-	$self->{'_html_vote'} = Tags::HTML::Commons::Vote::Vote->new(%p);
+	$self->{'_html_vote'} = Tags::HTML::Commons::Vote::Vote->new(%p,
+		'form_link' => '/vote_save',
+	);
 
 	return;
 }
