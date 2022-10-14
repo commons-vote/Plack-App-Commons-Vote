@@ -32,10 +32,11 @@ use Tags::HTML::Image::Grid;
 use Tags::HTML::Login::Register;
 use Tags::HTML::Pager;
 use Tags::HTML::Pager::Utils qw(adjust_actual_page compute_index_values pages_num);
-use Unicode::UTF8 qw(decode_utf8);
+use Unicode::UTF8 qw(decode_utf8 encode_utf8);
 
 Readonly::Scalar our $IMAGE_GRID_WIDTH => 340;
 Readonly::Scalar our $IMAGES_ON_PAGE => 24;
+
 our $VERSION = 0.01;
 
 sub _css {
@@ -78,7 +79,6 @@ sub _css {
 
 	# Section page.
 	} elsif ($self->{'page'} eq 'section') {
-
 		$self->{'_html_section'}->process_css;
 
 	# Section form page.
@@ -387,6 +387,36 @@ sub _process_actions {
 			$self->_redirect('/competition/'.$section->competition->id);
 		}
 
+	# Save vote.
+	} elsif ($self->{'page'} eq 'vote_save') {
+		my $competition_id = $req->parameters->{'competition_id'};
+		my $image_id = $req->parameters->{'image_id'};
+		my $vote_type_id = $req->parameters->{'vote_type_id'};
+		# TODO vote
+
+		# Check type of voting.
+		# TODO
+
+		# Check date of voting.
+		# TODO
+
+		my $competition = $self->backend->fetch_competition({
+			'competition_id' => $competition_id,
+		});
+		my $image = $self->backend->fetch_image({
+			'image_id' => $image_id,
+		});
+		my $vote_type = $self->backend->fetch_vote_type({
+			'vote_type_id' => $vote_type_id,
+		});
+
+		my $vote = $self->backend->save_vote(Data::Commons::Vote::Vote->new(
+			'competition' => $competition,
+			'image' => $image,
+			'person' => $self->{'login_user'},
+			'vote_type' => $vote_type,
+			'vote_value' => 1,
+		));
 	}
 
 	# Main page.
