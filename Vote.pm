@@ -9,6 +9,7 @@ use Activity::Commons::Vote::Stats;
 use Commons::Link;
 use Data::Commons::Vote::Competition;
 use Data::FormValidator;
+use Data::HTML::A;
 use Data::Printer return_value => 'dump';
 use Error::Pure qw(err);
 use File::Spec::Functions qw(splitdir);
@@ -33,6 +34,7 @@ use Tags::HTML::Login::Register;
 use Tags::HTML::Pager;
 use Tags::HTML::Pager::Utils qw(adjust_actual_page compute_index_values pages_num);
 use Tags::HTML::Pre;
+use Tags::HTML::Table::View;
 use Unicode::UTF8 qw(decode_utf8 encode_utf8);
 
 Readonly::Scalar our $IMAGE_GRID_WIDTH => 340;
@@ -73,6 +75,10 @@ sub _css {
 	# Log record.
 	} elsif ($self->{'page'} eq 'log') {
 		$self->{'_html_pre'}->process_css;
+
+	# Log list.
+	} elsif ($self->{'page'} eq 'logs') {
+		$self->{'_html_table_view'}->process_css;
 
 	# Main page.
 	} elsif ($self->{'page'} eq 'main') {
@@ -194,6 +200,9 @@ sub _prepare_app {
 			%p,
 			'form_link' => '/section_save',
 		);
+	$self->{'_html_table_view'} = Tags::HTML::Table::View->new(%p,
+		'header' => 1,
+	);
 	$self->{'_html_vote'} = Tags::HTML::Commons::Vote::Vote->new(%p,
 		'form_link' => '/vote_save',
 	);
@@ -518,6 +527,27 @@ sub _process_actions {
 			$self->{'data'}->{'log'} = $self->backend->fetch_log($self->{'page_id'});
 		}
 
+	# Log list.
+	} elsif ($self->{'page'} eq 'logs') {
+		if ($self->{'page_id'}) {
+			my @logs = $self->backend->fetch_logs({'competition_id' => $self->{'page_id'}});
+			$self->{'data'}->{'logs'} = [];
+			push @{$self->{'data'}->{'logs'}}, [
+				'Date and time when log created',
+				'Log type',
+				'Log',
+			], map {
+				[
+					$_->created_at->stringify,
+					$_->log_type->type,
+					Data::HTML::A->new(
+						'data' => 'View log record',
+						'url' => '/log/'.$_->id,
+					),
+				],
+			} @logs;
+		}
+
 	# List newcomers
 	} elsif ($self->{'page'} eq 'newcomers') {
 		if ($self->{'page_id'}) {
@@ -616,6 +646,10 @@ sub _tags_middle {
 	} elsif ($self->{'page'} eq 'log') {
 		# TODO Information about log.
 		$self->{'_html_pre'}->process($self->{'data'}->{'log'}->log);
+
+	# Log list.
+	} elsif ($self->{'page'} eq 'logs') {
+		$self->{'_html_table_view'}->process($self->{'data'}->{'logs'});
 
 	# Main page.
 	} elsif ($self->{'page'} eq 'main') {
