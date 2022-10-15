@@ -4,6 +4,7 @@ use base qw(Plack::Component::Tags::HTML);
 use strict;
 use warnings;
 
+use Activity::Commons::Vote::Delete;
 use Activity::Commons::Vote::Load;
 use Activity::Commons::Vote::Stats;
 use Commons::Link;
@@ -527,7 +528,7 @@ sub _process_actions {
 	# Load competition from Wikimedia Commons.
 	} elsif ($self->{'page'} eq 'load') {
 		if ($self->{'page_id'}) {
-			my $load = Activity::Commons::Vote::Load->new(
+			my %p = (
 				'backend' => $self->backend,
 				'creator' => $self->{'login_user'},
 				'verbose_cb' => sub {
@@ -535,6 +536,10 @@ sub _process_actions {
 					$env->{'psgi.errors'}->print(encode_utf8($message)."\n");
 				},
 			);
+			my $competition = $self->backend->fetch_competition($self->{'page_id'});
+			my $delete = Activity::Commons::Vote::Delete->new(%p);
+			$delete->delete_competition_section_images($competition);
+			my $load = Activity::Commons::Vote::Load->new(%p);
 			# XXX recursive opts?
 			$load->load($self->{'page_id'});
 
