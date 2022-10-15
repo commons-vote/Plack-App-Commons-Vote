@@ -8,6 +8,7 @@ use Activity::Commons::Vote::Load;
 use Activity::Commons::Vote::Stats;
 use Commons::Link;
 use Data::Commons::Vote::Competition;
+use Data::Commons::Vote::Log;
 use Data::FormValidator;
 use Data::HTML::A;
 use Data::Printer return_value => 'dump';
@@ -325,9 +326,29 @@ sub _process_actions {
 			$competition = $self->backend->update_competition(
 				$competition_to_update,
 			);
+			my $log_type = $self->backend->fetch_log_type_name('update_competition');
+			$self->backend->save_log(
+				Data::Commons::Vote::Log->new(
+					'competition' => $competition,
+					'created_by' => $self->{'login_user'},
+					# TODO Data changed.
+					'log' => 'Competition updated.',
+					'log_type' => $log_type,
+				),
+			);
 		} else {
 			$competition = $self->backend->save_competition(
 				$competition_to_update,
+			);
+			my $log_type = $self->backend->fetch_log_type_name('create_competition');
+			$self->backend->save_log(
+				Data::Commons::Vote::Log->new(
+					'competition' => $competition,
+					'created_by' => $self->{'login_user'},
+					# TODO Information which was uploaded.
+					'log' => 'Competition created.',
+					'log_type' => $log_type,
+				),
 			);
 		}
 		if ($competition->id) {
