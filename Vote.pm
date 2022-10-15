@@ -32,6 +32,7 @@ use Tags::HTML::Image::Grid;
 use Tags::HTML::Login::Register;
 use Tags::HTML::Pager;
 use Tags::HTML::Pager::Utils qw(adjust_actual_page compute_index_values pages_num);
+use Tags::HTML::Pre;
 use Unicode::UTF8 qw(decode_utf8 encode_utf8);
 
 Readonly::Scalar our $IMAGE_GRID_WIDTH => 340;
@@ -68,6 +69,10 @@ sub _css {
 	} elsif ($self->{'page'} eq 'images') {
 		$self->{'_html_pager'}->process_css;
 		$self->{'_html_images'}->process_css;
+
+	# Log record.
+	} elsif ($self->{'page'} eq 'log') {
+		$self->{'_html_pre'}->process_css;
 
 	# Main page.
 	} elsif ($self->{'page'} eq 'main') {
@@ -178,6 +183,9 @@ sub _prepare_app {
 
 			return '?page_num='.$page;
 		},
+	);
+	$self->{'_html_pre'} = Tags::HTML::Pre->new(
+		%p,
 	);
 	$self->{'_html_section'}
 		= Tags::HTML::Commons::Vote::Section->new(%p);
@@ -504,6 +512,12 @@ sub _process_actions {
 			$self->_redirect('/competition/'.$self->{'page_id'});
 		}
 
+	# Log record.
+	} elsif ($self->{'page'} eq 'log') {
+		if ($self->{'page_id'}) {
+			$self->{'data'}->{'log'} = $self->backend->fetch_log($self->{'page_id'});
+		}
+
 	# List newcomers
 	} elsif ($self->{'page'} eq 'newcomers') {
 		if ($self->{'page_id'}) {
@@ -597,6 +611,11 @@ sub _tags_middle {
 		);
 		$self->{'_html_images'}->process($self->{'data'}->{'images'});
 		$self->{'_html_pager'}->process($self->{'data'}->{'pager'});
+
+	# Log record.
+	} elsif ($self->{'page'} eq 'log') {
+		# TODO Information about log.
+		$self->{'_html_pre'}->process($self->{'data'}->{'log'}->log);
 
 	# Main page.
 	} elsif ($self->{'page'} eq 'main') {
