@@ -10,6 +10,8 @@ use Activity::Commons::Vote::Stats;
 use Commons::Link;
 use Data::Commons::Vote::Competition;
 use Data::Commons::Vote::Log;
+use Data::Commons::Vote::Theme;
+use Data::Commons::Vote::ThemeImage;
 use Data::FormValidator;
 use Data::HTML::A;
 use Data::Printer return_value => 'dump';
@@ -102,6 +104,7 @@ sub _css {
 	# Theme form page.
 	} elsif ($self->{'page'} eq 'theme_form') {
 		$self->{'_html_theme_form'}->process_css;
+
 	# Vote page.
 	} elsif ($self->{'page'} eq 'vote') {
 		$self->{'_html_vote'}->process_css;
@@ -439,6 +442,63 @@ sub _process_actions {
 
 			# Redirect.
 			$self->_redirect('/competition/'.$section->competition->id);
+		}
+
+	# Save theme.
+	} elsif ($self->{'page'} eq 'theme_save') {
+		my $parameters_hr = $req->parameters->as_hashref;
+		my $profile_hr = {
+			'required' => ['theme_name',],
+		};
+		my $results = Data::FormValidator->check($parameters_hr, $profile_hr);
+		if ($results->has_invalid) {
+			err "Paramters are invalid.";
+		}
+		my $theme_id = $req->parameters->{'theme_id'};
+		my $theme_to_update = Data::Commons::Vote::Theme->new(
+			'created_by' => $self->{'login_user'},
+			'id' => $theme_id || undef,
+			'name' => decode_utf8($req->parameters->{'theme_name'}),
+			'shortcut' => decode_utf8($req->parameters->{'theme_shortcut'}) || undef,
+		);
+		my $theme;
+		if ($theme_id) {
+			$theme = $self->backend->update_theme(
+				$theme_to_update,
+			);
+		} else {
+			$theme = $self->backend->save_theme(
+				$theme_to_update,
+			);
+		}
+		if (defined $req->parameters->{'images'}) {
+			foreach my $image_on_commons (split m/\r\n/ms, $req->parameters->{'images'}) {
+				my $load = Activity::Commons::Vote::Load->new(
+					'backend' => $self->backend,
+					'creator' => $self->{'login_user'},
+					'verbose_cb' => sub {
+						my $message = shift;
+						$env->{'psgi.errors'}->print(encode_utf8($message)."\n");
+					},
+				);
+				my $image = $load->load_commons_image(decode_utf8($image_on_commons));
+				my $theme_image = Data::Commons::Vote::ThemeImage->new(
+					'created_by' => $self->{'login_user'},
+					'theme_id' => $theme->id,
+					'image' => $image,
+				);
+				$self->backend->save_theme_image($theme_image);
+			}
+		}
+		if ($theme->id) {
+			$self->{'page'} = 'theme';
+			$self->{'page_id'} = $theme->id;
+
+			# Redirect.
+			$self->_redirect('/theme/'.$theme->id);
+		} else {
+			$self->{'page'} = 'theme_form';
+			# TODO Values from form.
 		}
 
 	# Save vote.
