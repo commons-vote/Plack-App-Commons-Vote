@@ -369,7 +369,7 @@ sub _process_actions {
 			# TODO Values from form.
 		}
 
-	# Save sections.
+	# Save section.
 	} elsif ($self->{'page'} eq 'section_save') {
 		my $parameters_hr = $req->parameters->as_hashref;
 		my $profile_hr = {
