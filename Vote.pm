@@ -321,6 +321,7 @@ sub _process_actions {
 			'organizer' => decode_utf8($req->parameters->{'organizer'}) || undef,
 			'organizer_logo' => decode_utf8($req->parameters->{'organizer_logo'}) || undef,
 			'public_voting' => $public_voting,
+			'wd_qid' => $req->parameters->{'wd_qid'} || undef,
 		);
 		my $competition;
 		if ($competition_id) {
