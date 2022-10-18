@@ -324,19 +324,24 @@ sub _process_actions {
 		);
 		my $competition;
 		if ($competition_id) {
-			$competition = $self->backend->update_competition(
-				$competition_to_update,
-			);
-			my $log_type = $self->backend->fetch_log_type_name('update_competition');
-			$self->backend->save_log(
-				Data::Commons::Vote::Log->new(
-					'competition' => $competition,
-					'created_by' => $self->{'login_user'},
-					# TODO Data changed.
-					'log' => 'Competition updated.',
-					'log_type' => $log_type,
-				),
-			);
+			$competition = $self->backend->fetch_competition($competition_id);
+			if ($competition->created_by->id eq $self->{'login_user'}->id) {
+				$competition = $self->backend->update_competition(
+					$competition_to_update,
+				);
+				my $log_type = $self->backend->fetch_log_type_name('update_competition');
+				my $log = 'Competition updated.';
+				$self->backend->save_log(
+					Data::Commons::Vote::Log->new(
+						'competition' => $competition,
+						'created_by' => $self->{'login_user'},
+						'log' => $log,
+						'log_type' => $log_type,
+					),
+				);
+			} else {
+				err 'Cannot update competition.';
+			}
 		} else {
 			$competition = $self->backend->save_competition(
 				$competition_to_update,
