@@ -29,6 +29,7 @@ use Tags::HTML::Commons::Vote::Menu;
 use Tags::HTML::Commons::Vote::Newcomers;
 use Tags::HTML::Commons::Vote::Section;
 use Tags::HTML::Commons::Vote::SectionForm;
+use Tags::HTML::Commons::Vote::ThemeForm;
 use Tags::HTML::Commons::Vote::Vote;
 use Tags::HTML::Image;
 use Tags::HTML::Image::Grid;
@@ -98,6 +99,9 @@ sub _css {
 	} elsif ($self->{'page'} eq 'section_form') {
 		$self->{'_html_section_form'}->process_css;
 
+	# Theme form page.
+	} elsif ($self->{'page'} eq 'theme_form') {
+		$self->{'_html_theme_form'}->process_css;
 	# Vote page.
 	} elsif ($self->{'page'} eq 'vote') {
 		$self->{'_html_vote'}->process_css;
@@ -205,6 +209,11 @@ sub _prepare_app {
 	$self->{'_html_table_view'} = Tags::HTML::Table::View->new(%p,
 		'header' => 1,
 	);
+	$self->{'_html_theme_form'}
+		= Tags::HTML::Commons::Vote::ThemeForm->new(
+			%p,
+			'form_link' => '/theme_save',
+		);
 	$self->{'_html_vote'} = Tags::HTML::Commons::Vote::Vote->new(%p,
 		'form_link' => '/vote_save',
 	);
@@ -615,6 +624,13 @@ sub _process_actions {
 			}
 		}
 
+	# Load theme form data.
+	} elsif ($self->{'page'} eq 'theme_form') {
+		if ($self->{'page_id'}) {
+			$self->{'data'}->{'theme_form'}
+				= $self->backend->fetch_theme($self->{'page_id'});
+		}
+
 	# Vote page.
 	} elsif ($self->{'page'} eq 'vote') {
 		if ($self->{'page_id'}) {
@@ -700,6 +716,12 @@ sub _tags_middle {
 		$self->{'_html_section_form'}->process(
 			$self->{'data'}->{'section_form'},
 			$self->{'data'}->{'competition'},
+		);
+
+	# Theme form page.
+	} elsif ($self->{'page'} eq 'theme_form') {
+		$self->{'_html_theme_form'}->process(
+			$self->{'data'}->{'theme_form'},
 		);
 
 	# Voting page.
