@@ -5,7 +5,7 @@ use strict;
 use warnings;
 
 use Plack::Request;
-use Plack::Util::Accessor qw(backend theme);
+use Plack::Util::Accessor qw(backend login_link theme);
 use Tags::HTML::Commons::Vote::Login;
 
 our $VERSION = 0.01;
@@ -21,8 +21,13 @@ sub _css {
 sub _prepare_app {
 	my $self = shift;
 
+	if (! defined $self->login_link) {
+		$self->login_link('login');
+	}
+
 	$self->{'_html_login'} = Tags::HTML::Commons::Vote::Login->new(
 		'css' => $self->css,
+		'login_link' => $self->login_link,
 		'tags' => $self->tags,
 	);
 
