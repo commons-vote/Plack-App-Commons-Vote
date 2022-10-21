@@ -113,6 +113,22 @@ sub _css {
 	return;
 }
 
+sub _check_access {
+	my ($self, $cond_hr) = @_;
+
+	if (exists $cond_hr->{'competition_id'}) {
+		my $count = $self->backend->count_competition({
+			'competition_id' => $cond_hr->{'competition_id'},
+			'created_by_id' => $self->{'login_user'}->id,
+		});
+		if ($count) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 sub _check_required_middleware {
 	my ($self, $env) = @_;
 
@@ -542,14 +558,14 @@ sub _process_actions {
 
 	# Load competition data.
 	} elsif ($self->{'page'} eq 'competition') {
-		if ($self->{'page_id'}) {
+		if ($self->{'page_id'} && $self->_check_access({'competition_id' => $self->{'page_id'}})) {
 			$self->{'data'}->{'competition'}
 				= $self->backend->fetch_competition($self->{'page_id'});
 		}
 
 	# Load competition form data.
 	} elsif ($self->{'page'} eq 'competition_form') {
-		if ($self->{'page_id'}) {
+		if ($self->{'page_id'} && $self->_check_access({'competition_id' => $self->{'page_id'}})) {
 			$self->{'data'}->{'competition_form'}
 				= $self->backend->fetch_competition($self->{'page_id'});
 		}
