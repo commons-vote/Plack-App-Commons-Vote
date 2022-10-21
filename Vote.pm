@@ -180,9 +180,10 @@ sub _prepare_app {
 		= Tags::HTML::Commons::Vote::Competitions->new(%p);
 	$self->{'_html_image'} = Tags::HTML::Image->new(
 		%p,
+		'fit_minus' => '110px',
 		'img_src_cb' => sub {
 			my $image = shift;
-			return $self->{'_link'}->link($image->commons_name);
+			return $self->{'_link'}->thumb_link($image->commons_name, 1630);
 		},
 	);
 	$self->{'_html_images'} = Tags::HTML::Image::Grid->new(
