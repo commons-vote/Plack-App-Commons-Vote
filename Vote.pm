@@ -766,18 +766,28 @@ END
 		# TODO Check int for validation_type_id.
 		my $validation_type_id = $req->parameters->{'validation_type_id'};
 
+		# Update competition validation.
 		if ($self->{'page_id'}) {
 			$self->{'data'}->{'competition_validation'}
 				= $self->backend->fetch_competition_validation($self->{'page_id'});
+			$validation_type_id ||= $self->{'data'}->{'competition_validation'}->validation_type->id;
+			$self->{'data'}->{'validation_types'} = [$self->backend->fetch_validation_types];
+			# TODO Minus other validation types than mine.
+
+		# Create competition validation.
 		} else {
 			my $competition_id = $req->parameters->{'competition_id'};
 			if ($competition_id) {
 				$self->{'data'}->{'competition'}
 					= $self->backend->fetch_competition($competition_id);
+
+				# Only not used in competition.
+				$self->{'data'}->{'validation_types'}
+					= [$self->backend->fetch_validation_types_not_used($competition_id)];
+
 			} else {
 				err "No competition id.";
 			}
-			$self->{'data'}->{'validation_types'} = [$self->backend->fetch_validation_types];
 		}
 
 		if ($validation_type_id) {
@@ -790,6 +800,7 @@ END
 				= [$self->backend->fetch_validation_type_options($validation_type_id)];
 		}
 
+		# TODO Optimize.
 		$self->{'_html_competition_validation_form'}->init(
 			$self->{'data'}->{'competition_validation'},
 			$self->{'data'}->{'competition'},
