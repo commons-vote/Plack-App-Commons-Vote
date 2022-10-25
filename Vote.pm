@@ -26,6 +26,7 @@ use Plack::Util::Accessor qw(backend devel schema);
 use Readonly;
 use Tags::HTML::Commons::Vote::Competition;
 use Tags::HTML::Commons::Vote::CompetitionForm;
+use Tags::HTML::Commons::Vote::CompetitionValidation;
 use Tags::HTML::Commons::Vote::CompetitionValidationForm;
 use Tags::HTML::Commons::Vote::Competitions;
 use Tags::HTML::Commons::Vote::Main;
@@ -102,6 +103,10 @@ sub _css {
 	# Section form page.
 	} elsif ($self->{'page'} eq 'section_form') {
 		$self->{'_html_section_form'}->process_css;
+
+	# Validation page.
+	} elsif ($self->{'page'} eq 'validation') {
+		$self->{'_html_competition_validation'}->process_css;
 
 	# Validation form page.
 	} elsif ($self->{'page'} eq 'validation_form') {
@@ -182,6 +187,8 @@ sub _prepare_app {
 			%p,
 			'form_link' => '/competition_save',
 		);
+	$self->{'_html_competition_validation'}
+		= Tags::HTML::Commons::Vote::CompetitionValidation->new(%p);
 	$self->{'_html_competition_validation_form'}
 		= Tags::HTML::Commons::Vote::CompetitionValidationForm->new(
 			%p,
@@ -757,6 +764,13 @@ sub _process_actions {
 			$self->_redirect('/competition/'.$self->{'page_id'});
 		}
 
+	# Load validation data.
+	} elsif ($self->{'page'} eq 'validation') {
+		if ($self->{'page_id'}) {
+			$self->{'data'}->{'validation'}
+				= $self->backend->fetch_competition_validation($self->{'page_id'});
+		}
+
 	# Load validation form data.
 	} elsif ($self->{'page'} eq 'validation_form') {
 		$self->script_js([
@@ -917,6 +931,10 @@ sub _tags_middle {
 		$self->{'_html_theme_form'}->process(
 			$self->{'data'}->{'theme_form'},
 		);
+
+	# Validation page.
+	} elsif ($self->{'page'} eq 'validation') {
+		$self->{'_html_competition_validation'}->process($self->{'data'}->{'validation'});
 
 	# Validation form page.
 	} elsif ($self->{'page'} eq 'validation_form') {
