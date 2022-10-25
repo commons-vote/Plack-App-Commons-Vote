@@ -530,6 +530,16 @@ sub _process_actions {
 			# TODO Values from form.
 		}
 
+	# Remove validation.
+	} elsif ($self->{'page'} eq 'validation_remove') {
+		if ($self->{'page_id'}) {
+			$self->backend->delete_competition_validation_options($self->{'page_id'});
+			my $validation = $self->backend->delete_competition_validation($self->{'page_id'});
+
+			# Redirect.
+			$self->_redirect('/competition/'.$validation->competition->id);
+		}
+
 	# Save vote.
 	} elsif ($self->{'page'} eq 'vote_save') {
 		my $competition_id = $req->parameters->{'competition_id'};
