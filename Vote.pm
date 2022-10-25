@@ -753,6 +753,9 @@ window.onload = function() {
 END
 		]);
 
+		# TODO Check int for validation_type_id.
+		my $validation_type_id = $req->parameters->{'validation_type_id'};
+
 		if ($self->{'page_id'}) {
 			$self->{'data'}->{'competition_validation'}
 				= $self->backend->fetch_competition_validation($self->{'page_id'});
@@ -767,8 +770,6 @@ END
 			$self->{'data'}->{'validation_types'} = [$self->backend->fetch_validation_types];
 		}
 
-		# TODO Check int for validation_type_id.
-		my $validation_type_id = $req->parameters->{'validation_type_id'};
 		if ($validation_type_id) {
 			$self->{'data'}->{'validation_type'} = $self->backend->fetch_validation_type({
 				'validation_type_id' => $validation_type_id,
