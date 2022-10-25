@@ -101,6 +101,7 @@ sub _css {
 	# Section form page.
 	} elsif ($self->{'page'} eq 'section_form') {
 		$self->{'_html_section_form'}->process_css;
+
 	# Validation form page.
 	} elsif ($self->{'page'} eq 'validation_form') {
 		$self->{'_html_competition_validation_form'}->process_css;
@@ -712,6 +713,11 @@ sub _process_actions {
 			}
 		}
 
+		$self->{'_html_section_form'}->init(
+			$self->{'data'}->{'section_form'},
+			$self->{'data'}->{'competition'},
+		);
+
 	# Load theme form data.
 	} elsif ($self->{'page'} eq 'theme_form') {
 		if ($self->{'page_id'}) {
@@ -862,10 +868,7 @@ sub _tags_middle {
 
 	# Section form page.
 	} elsif ($self->{'page'} eq 'section_form') {
-		$self->{'_html_section_form'}->process(
-			$self->{'data'}->{'section_form'},
-			$self->{'data'}->{'competition'},
-		);
+		$self->{'_html_section_form'}->process;
 
 	# Theme form page.
 	} elsif ($self->{'page'} eq 'theme_form') {
