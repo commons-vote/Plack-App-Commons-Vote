@@ -25,6 +25,7 @@ use Plack::Util::Accessor qw(backend devel schema);
 use Readonly;
 use Tags::HTML::Commons::Vote::Competition;
 use Tags::HTML::Commons::Vote::CompetitionForm;
+use Tags::HTML::Commons::Vote::CompetitionValidationForm;
 use Tags::HTML::Commons::Vote::Competitions;
 use Tags::HTML::Commons::Vote::Main;
 use Tags::HTML::Commons::Vote::Menu;
@@ -100,6 +101,9 @@ sub _css {
 	# Section form page.
 	} elsif ($self->{'page'} eq 'section_form') {
 		$self->{'_html_section_form'}->process_css;
+	# Validation form page.
+	} elsif ($self->{'page'} eq 'validation_form') {
+		$self->{'_html_competition_validation_form'}->process_css;
 
 	# Theme form page.
 	} elsif ($self->{'page'} eq 'theme_form') {
@@ -175,6 +179,11 @@ sub _prepare_app {
 		= Tags::HTML::Commons::Vote::CompetitionForm->new(
 			%p,
 			'form_link' => '/competition_save',
+		);
+	$self->{'_html_competition_validation_form'}
+		= Tags::HTML::Commons::Vote::CompetitionValidationForm->new(
+			%p,
+			'form_link' => '/validation_save',
 		);
 	$self->{'_html_competitions'}
 		= Tags::HTML::Commons::Vote::Competitions->new(%p);
@@ -253,6 +262,8 @@ sub _process_actions {
 	delete $self->{'data'};
 	delete $self->{'page'};
 	delete $self->{'page_id'};
+	$self->script_js([]);
+	$self->script_js_src([]);
 
 	# Process PATH_INFO.
 	if ($req->path_info =~ m/^\/(\w+)\/?(\d*)$/ms) {
@@ -708,6 +719,67 @@ sub _process_actions {
 				= $self->backend->fetch_theme($self->{'page_id'});
 		}
 
+	# Load validation form data.
+	} elsif ($self->{'page'} eq 'validation_form') {
+		$self->script_js([
+			<<'END'
+window.onload = function() {
+	document.getElementById('validation_type_id').addEventListener("change", function() {
+		var options = this.getElementsByTagName("option");
+		var selected_id;
+		for(var i=0; i<options.length; i++) {
+			if (options[i].selected) {
+				if (options[i].getAttribute('id') != null) {
+					selected_id = options[i].getAttribute('id');
+				}
+			}
+		}
+		var url = "?competition_id="+document.getElementById('competition_id').value;
+		if (selected_id) {
+			url += '&validation_type_id='+selected_id;
+		}
+		window.location.href = url;
+	});
+};
+END
+		]);
+		$self->script_js_src([
+			'https://code.jquery.com/jquery-3.6.1.slim.min.js',
+		]);
+		if ($self->{'page_id'}) {
+			$self->{'data'}->{'competition_validation'}
+				= $self->backend->fetch_competition_validation($self->{'page_id'});
+		} else {
+			my $competition_id = $req->parameters->{'competition_id'};
+			if ($competition_id) {
+				$self->{'data'}->{'competition'}
+					= $self->backend->fetch_competition($competition_id);
+			} else {
+				err "No competition id.";
+			}
+			$self->{'data'}->{'validation_types'} = [$self->backend->fetch_validation_types];
+		}
+
+		# TODO Check int for validation_type_id.
+		my $validation_type_id = $req->parameters->{'validation_type_id'};
+		if ($validation_type_id) {
+			$self->{'data'}->{'validation_type'} = $self->backend->fetch_validation_type({
+				'validation_type_id' => $validation_type_id,
+			});
+
+			# Get options for validation type.
+			$self->{'data'}->{'validation_type_options'}
+				= [$self->backend->fetch_validation_type_options($validation_type_id)];
+		}
+
+		$self->{'_html_competition_validation_form'}->init(
+			$self->{'data'}->{'competition_validation'},
+			$self->{'data'}->{'competition'},
+			$self->{'data'}->{'validation_types'},
+			$self->{'data'}->{'validation_type'},
+			$self->{'data'}->{'validation_type_options'},
+		);
+
 	# Vote page.
 	} elsif ($self->{'page'} eq 'vote') {
 		if ($self->{'page_id'}) {
@@ -800,6 +872,10 @@ sub _tags_middle {
 		$self->{'_html_theme_form'}->process(
 			$self->{'data'}->{'theme_form'},
 		);
+
+	# Validation form page.
+	} elsif ($self->{'page'} eq 'validation_form') {
+		$self->{'_html_competition_validation_form'}->process;
 
 	# Voting page.
 	} elsif ($self->{'page'} eq 'vote') {
