@@ -7,6 +7,7 @@ use warnings;
 use Activity::Commons::Vote::Delete;
 use Activity::Commons::Vote::Load;
 use Activity::Commons::Vote::Stats;
+use Activity::Commons::Vote::Validation;
 use Commons::Link;
 use Data::Commons::Vote::Competition;
 use Data::Commons::Vote::Log;
@@ -736,6 +737,24 @@ sub _process_actions {
 		if ($self->{'page_id'}) {
 			$self->{'data'}->{'theme_form'}
 				= $self->backend->fetch_theme($self->{'page_id'});
+		}
+
+	# Validate competition.
+	} elsif ($self->{'page'} eq 'validate') {
+		if ($self->{'page_id'}) {
+			my %p = (
+				'backend' => $self->backend,
+				'creator' => $self->{'login_user'},
+				'verbose_cb' => sub {
+					my $message = shift;
+					$env->{'psgi.errors'}->print(encode_utf8($message)."\n");
+				},
+			);
+			my $validator = Activity::Commons::Vote::Validation->new(%p);
+			$validator->validate($self->{'page_id'});
+
+			# Redirect.
+			$self->_redirect('/competition/'.$self->{'page_id'});
 		}
 
 	# Load validation form data.
