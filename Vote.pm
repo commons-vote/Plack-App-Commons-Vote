@@ -582,6 +582,9 @@ sub _process_actions {
 			$self->{'data'}->{'competition_form'}
 				= $self->backend->fetch_competition($self->{'page_id'});
 		}
+		$self->{'_html_competition_form'}->init(
+			$self->{'data'}->{'competition_form'},
+		);
 
 	# Load all competition data.
 	} elsif ($self->{'page'} eq 'competitions') {
@@ -825,7 +828,7 @@ sub _tags_middle {
 
 	# Competition form page.
 	} elsif ($self->{'page'} eq 'competition_form') {
-		$self->{'_html_competition_form'}->process($self->{'data'}->{'competition_form'});
+		$self->{'_html_competition_form'}->process;
 
 	# List of competitions page.
 	} elsif ($self->{'page'} eq 'competitions') {
