@@ -752,9 +752,7 @@ window.onload = function() {
 };
 END
 		]);
-		$self->script_js_src([
-			'https://code.jquery.com/jquery-3.6.1.slim.min.js',
-		]);
+
 		if ($self->{'page_id'}) {
 			$self->{'data'}->{'competition_validation'}
 				= $self->backend->fetch_competition_validation($self->{'page_id'});
