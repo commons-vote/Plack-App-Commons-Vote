@@ -10,6 +10,8 @@ use Activity::Commons::Vote::Stats;
 use Activity::Commons::Vote::Validation;
 use Commons::Link;
 use Data::Commons::Vote::Competition;
+use Data::Commons::Vote::CompetitionValidation;
+use Data::Commons::Vote::CompetitionValidationOption;
 use Data::Commons::Vote::Log;
 use Data::Commons::Vote::Theme;
 use Data::Commons::Vote::ThemeImage;
@@ -546,6 +548,58 @@ sub _process_actions {
 
 			# Redirect.
 			$self->_redirect('/competition/'.$validation->competition->id);
+		}
+
+	# Save validation.
+	} elsif ($self->{'page'} eq 'validation_save') {
+		my $parameters_hr = $req->parameters->as_hashref;
+		my $profile_hr = {
+			'required' => ['competition_id', 'validation_type_id'],
+		};
+		my $results = Data::FormValidator->check($parameters_hr, $profile_hr);
+		if ($results->has_invalid) {
+			err "Paramters are invalid.";
+		}
+
+		my $competition_id = $req->parameters->{'competition_id'};
+		my $competition = $self->backend->fetch_competition($competition_id);
+
+		my $validation_type_id = $req->parameters->{'validation_type_id'};
+		my $validation_type = $self->backend->fetch_validation_type({
+			'validation_type_id' => $validation_type_id,
+		});
+
+		my $competition_validation = Data::Commons::Vote::CompetitionValidation->new(
+			'competition' => $competition,
+			'created_by' => $self->{'login_user'},
+			'validation_type' => $validation_type,
+		);
+		$competition_validation = $self->backend->save_competition_validation($competition_validation);
+
+		# Fetch validation options.
+		my @validation_type_options = $self->backend->fetch_validation_type_options($validation_type_id);
+		foreach my $validation_type_option (@validation_type_options) {
+			my $value = $req->parameters->{$validation_type_option->option};
+			if (! defined $value) {
+				err "Parameter '".$validation_type_option->option."' is required.";
+			}
+			my $competition_validation_option = Data::Commons::Vote::CompetitionValidationOption->new(
+				'competition_validation' => $competition_validation,
+				'created_by' => $self->{'login_user'},
+				'validation_option' => $validation_type_option,
+				'value' => $value,
+			);
+			$competition_validation_option = $self->backend->save_competition_validation_option($competition_validation_option);
+		}
+
+		if ($competition_validation->id) {
+			$self->{'page'} = 'competition';
+			$self->{'page_id'} = $competition_validation->competition->id;
+
+			# Redirect.
+			$self->_redirect('/competition/'.$competition_validation->competition->id);
+		} else {
+			$self->{'page'} = 'validation_form';
 		}
 
 	# Save vote.
