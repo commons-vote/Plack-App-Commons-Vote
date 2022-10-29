@@ -324,10 +324,13 @@ sub _process_actions {
 		my $person_to_update_or_create = Data::Commons::Vote::Person->new(
 			'email' => $self->{'login_email'},
 			'first_upload_at' => $dt_first_upload,
-			'wm_username' => $profile_hr->{'username'},
+			defined $self->{'login_user'} ? (
+				'id' => $self->{'login_user'}->id,
+			) : (),
 			$profile_hr->{'realname'} ? (
 				'name' => $profile_hr->{'realname'},
 			) : (),
+			'wm_username' => $profile_hr->{'username'},
 		);
 		if (! defined $self->{'login_user'}) {
 			$self->{'login_user'} = $self->backend->save_person($person_to_update_or_create);
