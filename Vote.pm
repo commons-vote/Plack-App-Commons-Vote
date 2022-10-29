@@ -485,6 +485,15 @@ sub _process_actions {
 		if ($self->{'page_id'}) {
 			my $section = $self->backend->delete_section($self->{'page_id'});
 
+			# Remove dt_image_loaded from competition.
+			my $old_competition_id = $section->competition->id;
+			my $count_sections = $self->backend->count_competition_sections($old_competition_id);
+			if ($count_sections == 0) {
+				$self->backend->schema->resultset('Competition')->update({
+					'images_loaded_at' => undef,
+				});
+			}
+
 			# Redirect.
 			$self->_redirect('/competition/'.$section->competition->id);
 		}
