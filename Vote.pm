@@ -324,9 +324,6 @@ sub _process_actions {
 		my $person_to_update_or_create = Data::Commons::Vote::Person->new(
 			'email' => $self->{'login_email'},
 			'first_upload_at' => $dt_first_upload,
-			defined $self->{'login_user'} ? (
-				'id' => $self->{'login_user'}->id,
-			) : (),
 			$profile_hr->{'realname'} ? (
 				'name' => $profile_hr->{'realname'},
 			) : (),
@@ -335,7 +332,8 @@ sub _process_actions {
 		if (! defined $self->{'login_user'}) {
 			$self->{'login_user'} = $self->backend->save_person($person_to_update_or_create);
 		} else {
-			$self->{'login_user'} = $self->backend->update_person($person_to_update_or_create);
+			$self->{'login_user'} = $self->backend->update_person($self->{'login_user'}->id,
+				$person_to_update_or_create);
 		}
 	}
 
