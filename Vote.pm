@@ -511,6 +511,27 @@ sub _process_actions {
 			# TODO Values from form.
 		}
 
+	# Remove role.
+	} elsif ($self->{'page'} eq 'role_remove') {
+		if ($self->{'page_id'}) {
+			my $person_role = $self->backend->fetch_person_role({
+				'person_role_id' => $self->{'page_id'},
+			});
+			my $count_other = $self->backend->count_person_role({
+				'competition_id' => $person_role->competition->id,
+				'role_id' => $person_role->role->id,
+			});
+			if ($count_other > 1) {
+				$self->backend->delete_person_role($self->{'page_id'});
+			} else {
+				# XXX Error message to somewhere.
+				#err "Cannot delete last role.";
+			}
+
+			# Redirect.
+			$self->_redirect('/competition/'.$person_role->competition->id);
+		}
+
 	# Remove section.
 	} elsif ($self->{'page'} eq 'section_remove') {
 		if ($self->{'page_id'}) {
