@@ -30,6 +30,7 @@ requires:
   Activity::Commons::Vote::Load: 0
   Activity::Commons::Vote::Stats: 0
   Commons::Link: 0
+  Commons::Vote::Fetcher: 0
   Data::Commons::Vote::Competition: 0
   Data::FormValidator: 0
   Data::Printer: 0

@@ -9,6 +9,7 @@ use Activity::Commons::Vote::Load;
 use Activity::Commons::Vote::Stats;
 use Activity::Commons::Vote::Validation;
 use Commons::Link;
+use Commons::Vote::Fetcher;
 use Data::Commons::Vote::Competition;
 use Data::Commons::Vote::CompetitionValidation;
 use Data::Commons::Vote::CompetitionValidationOption;
@@ -177,6 +178,9 @@ sub _prepare_app {
 	# Wikimedia Commons link object.
 	$self->{'_link'} = Commons::Link->new;
 
+	# Commons fetcher.
+	$self->{'_fetcher'} = Commons::Vote::Fetcher->new;
+
 	my %p = (
 		'css' => $self->css,
 		'tags' => $self->tags,
@@ -316,8 +320,10 @@ sub _process_actions {
 	$self->{'login_user'} = $self->backend->fetch_person({'email' => $self->{'login_email'}});
 	if (! defined $self->{'login_user'}) {
 		$self->{'login_user'} = $self->backend->fetch_person({'wm_username' => $profile_hr->{'username'}});
+		my $dt_first_upload = $self->{'_fetcher'}->date_of_first_upload($profile_hr->{'username'});
 		my $person_to_update_or_create = Data::Commons::Vote::Person->new(
 			'email' => $self->{'login_email'},
+			'first_upload_at' => $dt_first_upload,
 			'wm_username' => $profile_hr->{'username'},
 			$profile_hr->{'realname'} ? (
 				'name' => $profile_hr->{'realname'},

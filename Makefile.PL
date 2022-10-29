@@ -21,6 +21,7 @@ recursive_author_tests('xt');
 requires 'Activity::Commons::Vote::Load' => 0;
 requires 'Activity::Commons::Vote::Stats' => 0;
 requires 'Commons::Link' => 0;
+requires 'Commons::Vote::Fetcher' => 0;
 requires 'Data::Commons::Vote::Competition' => 0;
 requires 'Data::FormValidator' => 0;
 requires 'Data::Printer' => 0;
