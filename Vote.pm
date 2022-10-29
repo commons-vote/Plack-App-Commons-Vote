@@ -315,13 +315,19 @@ sub _process_actions {
 	# Load data about person.
 	$self->{'login_user'} = $self->backend->fetch_person({'email' => $self->{'login_email'}});
 	if (! defined $self->{'login_user'}) {
-		$self->{'login_user'} = $self->backend->save_person(Data::Commons::Vote::Person->new(
+		$self->{'login_user'} = $self->backend->fetch_person({'wm_username' => $profile_hr->{'username'}});
+		my $person_to_update_or_create = Data::Commons::Vote::Person->new(
 			'email' => $self->{'login_email'},
 			'wm_username' => $profile_hr->{'username'},
 			$profile_hr->{'realname'} ? (
 				'name' => $profile_hr->{'realname'},
 			) : (),
-		));
+		);
+		if (! defined $self->{'login_user'}) {
+			$self->{'login_user'} = $self->backend->save_person($person_to_update_or_create);
+		} else {
+			$self->{'login_user'} = $self->backend->update_person($person_to_update_or_create);
+		}
 	}
 
 	# Save competition.
