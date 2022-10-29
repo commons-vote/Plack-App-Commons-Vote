@@ -35,6 +35,7 @@ use Tags::HTML::Commons::Vote::Competitions;
 use Tags::HTML::Commons::Vote::Main;
 use Tags::HTML::Commons::Vote::Menu;
 use Tags::HTML::Commons::Vote::Newcomers;
+use Tags::HTML::Commons::Vote::PersonRole;
 use Tags::HTML::Commons::Vote::Section;
 use Tags::HTML::Commons::Vote::SectionForm;
 use Tags::HTML::Commons::Vote::ThemeForm;
@@ -98,6 +99,10 @@ sub _css {
 	# List of newcomers.
 	} elsif ($self->{'page'} eq 'newcomers') {
 		$self->{'_html_newcomers'}->process_css;
+
+	# Person role page.
+	} elsif ($self->{'page'} eq 'role') {
+		$self->{'_html_person_role'}->process_css;
 
 	# Section page.
 	} elsif ($self->{'page'} eq 'section') {
@@ -243,6 +248,8 @@ sub _prepare_app {
 	$self->{'_html_pre'} = Tags::HTML::Pre->new(
 		%p,
 	);
+	$self->{'_html_person_role'}
+		= Tags::HTML::Commons::Vote::PersonRole->new(%p);
 	$self->{'_html_section'}
 		= Tags::HTML::Commons::Vote::Section->new(%p);
 	$self->{'_html_section_form'}
@@ -797,6 +804,15 @@ sub _process_actions {
 	# Register page.
 	} elsif ($self->{'page'} eq 'register') {
 
+	# Load person role data.
+	} elsif ($self->{'page'} eq 'role') {
+		if ($self->{'page_id'}) {
+			$self->{'data'}->{'person_role'}
+				= $self->backend->fetch_person_role({
+					'person_role_id' => $self->{'page_id'},
+				});
+		}
+
 	# Load section data.
 	} elsif ($self->{'page'} eq 'section') {
 		if ($self->{'page_id'}) {
@@ -1002,6 +1018,10 @@ sub _tags_middle {
 	# List of newcomers.
 	} elsif ($self->{'page'} eq 'newcomers') {
 		$self->{'_html_newcomers'}->process($self->{'data'}->{'newcomers'});
+
+	# Person role page.
+	} elsif ($self->{'page'} eq 'role') {
+		$self->{'_html_person_role'}->process($self->{'data'}->{'person_role'});
 
 	# Section page.
 	} elsif ($self->{'page'} eq 'section') {
