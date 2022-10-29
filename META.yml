@@ -38,7 +38,7 @@ requires:
   File::Spec::Functions: 0
   JSON::XS: 0
   Plack::App::Restricted: 0
-  Plack::Component::Tags::HTML: 0
+  Plack::Component::Tags::HTML: 0.08
   Plack::Request: 0
   Plack::Session: 0
   Plack::Util::Accessor: 0
