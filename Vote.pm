@@ -14,6 +14,7 @@ use Data::Commons::Vote::Competition;
 use Data::Commons::Vote::CompetitionValidation;
 use Data::Commons::Vote::CompetitionValidationOption;
 use Data::Commons::Vote::Log;
+use Data::Commons::Vote::PersonRole;
 use Data::Commons::Vote::Theme;
 use Data::Commons::Vote::ThemeImage;
 use Data::FormValidator;
@@ -418,6 +419,13 @@ sub _process_actions {
 			$competition = $self->backend->save_competition(
 				$competition_to_update,
 			);
+			my $competition_role = $self->backend->fetch_role('competition_admin');
+			$self->backend->save_person_role(Data::Commons::Vote::PersonRole->new(
+				'competition' => $competition,
+				'created_by' => $self->{'login_user'},
+				'person' => $self->{'login_user'},
+				'role' => $competition_role,
+			));
 			my $log_type = $self->backend->fetch_log_type_name('create_competition');
 			$self->backend->save_log(
 				Data::Commons::Vote::Log->new(
