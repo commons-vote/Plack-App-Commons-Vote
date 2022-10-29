@@ -459,6 +459,15 @@ sub _process_actions {
 				$section_to_update,
 			);
 		}
+
+		# Remove loaded_at from competition
+		$self->backend->schema->resultset('Competition')->update({
+			'images_loaded_at' => undef,
+		});
+		foreach my $section (@{$competition->sections}) {
+			$self->backend->delete_section_images($section->id);
+		}
+
 		if (defined $req->parameters->{'categories'}) {
 			foreach my $category_name (split m/\r\n/ms, $req->parameters->{'categories'}) {
 				my $category = Data::Commons::Vote::Category->new(
