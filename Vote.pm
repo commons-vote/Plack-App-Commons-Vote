@@ -458,6 +458,75 @@ sub _process_actions {
 			# TODO Values from form.
 		}
 
+	# Save role.
+	} elsif ($self->{'page'} eq 'role_save') {
+		my $parameters_hr = $req->parameters->as_hashref;
+		my $profile_hr = {
+			'required' => ['competition_id', 'wm_username', 'role_id'],
+		};
+		my $results = Data::FormValidator->check($parameters_hr, $profile_hr);
+		if ($results->has_invalid) {
+			err "Parameters are invalid.";
+		}
+		my $competition = $self->backend->fetch_competition($req->parameters->{'competition_id'});
+		if (! $competition) {
+			err "Bad competition.";
+		}
+		my $wm_username = decode_utf8(ucfirst($req->parameters->{'wm_username'}));
+		my $role_person = $self->backend->fetch_person({'wm_username' => $wm_username});
+		my $role_id = $req->parameters->{'role_id'};
+		my $role = $self->backend->fetch_role({'role_id' => $role_id});
+		if (! defined $role) {
+			err "Role doesn't exist.",
+				'Role id', $role_id,
+			;
+		}
+		# TODO Is role acceptable? If competition hasn't jury voting and want to add jury member?
+
+		# Check if person hasn't this role in db.
+		if (defined $role_person) {
+			my $count = $self->backend->count_person_role({
+				'person_id' => $role_person->id,
+				'competition_id' => $competition->id,
+				'role_id' => $role_id,
+			});
+			if ($count) {
+				err "Username has this role.",
+					'Wikimedia username', $wm_username,
+					'Role', $role->description,
+				;
+			}
+
+		# Create person in db.
+		} else {
+			my $user_id = $self->{'_fetcher'}->user_exists($req->parameters->{'wm_username'});
+			if (! defined $user_id) {
+				err "Username doesn't exists.",
+					'Wikimedia username', $wm_username,
+				;
+			}
+			$role_person = $self->backend->save_person(Data::Commons::Vote::Person->new(
+				'wm_username' => $wm_username,
+			));
+		}
+		my $person_role_to_update = Data::Commons::Vote::PersonRole->new(
+			'competition' => $competition,
+			'created_by' => $self->{'login_user'},
+			'person' => $role_person,
+			'role' => $role,
+		);
+		my $person_role = $self->backend->save_person_role($person_role_to_update);
+
+		if (defined $person_role->id) {
+			$self->{'page'} = 'role';
+			$self->{'page_id'} = $competition->id;
+
+			$self->_redirect('/competition/'.$competition->id);
+		} else {
+			$self->{'page'} = 'role_form';
+			# TODO Values from form.
+		}
+
 	# Save section.
 	} elsif ($self->{'page'} eq 'section_save') {
 		my $parameters_hr = $req->parameters->as_hashref;
