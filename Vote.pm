@@ -142,9 +142,9 @@ sub _check_access {
 	my ($self, $cond_hr) = @_;
 
 	if (exists $cond_hr->{'competition_id'}) {
-		my $count = $self->backend->count_competition({
+		my $count = $self->backend->count_person_role({
 			'competition_id' => $cond_hr->{'competition_id'},
-			'created_by_id' => $self->{'login_user'}->id,
+			'person_id' => $self->{'login_user'}->id,
 		});
 		if ($count) {
 			return 1;
