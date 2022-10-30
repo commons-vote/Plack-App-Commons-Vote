@@ -527,15 +527,19 @@ sub _process_actions {
 			my $person_role = $self->backend->fetch_person_role({
 				'person_role_id' => $self->{'page_id'},
 			});
-			my $count_other = $self->backend->count_person_role({
-				'competition_id' => $person_role->competition->id,
-				'role_id' => $person_role->role->id,
-			});
-			if ($count_other > 1) {
-				$self->backend->delete_person_role($self->{'page_id'});
+			if ($person_role->role->name eq 'competition_admin') {
+				my $count_other = $self->backend->count_person_role({
+					'competition_id' => $person_role->competition->id,
+					'role_id' => $person_role->role->id,
+				});
+				if ($count_other > 1) {
+					$self->backend->delete_person_role($self->{'page_id'});
+				} else {
+					# XXX Error message to somewhere.
+					#err "Cannot delete last role.";
+				}
 			} else {
-				# XXX Error message to somewhere.
-				#err "Cannot delete last role.";
+				$self->backend->delete_person_role($self->{'page_id'});
 			}
 
 			# Redirect.
