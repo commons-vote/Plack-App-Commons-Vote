@@ -429,7 +429,7 @@ sub _process_actions {
 			$competition = $self->backend->save_competition(
 				$competition_to_update,
 			);
-			my $competition_role = $self->backend->fetch_role('competition_admin');
+			my $competition_role = $self->backend->fetch_role({'name' => 'competition_admin'});
 			$self->backend->save_person_role(Data::Commons::Vote::PersonRole->new(
 				'competition' => $competition,
 				'created_by' => $self->{'login_user'},
