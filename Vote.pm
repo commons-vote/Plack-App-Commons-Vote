@@ -37,6 +37,7 @@ use Tags::HTML::Commons::Vote::Main;
 use Tags::HTML::Commons::Vote::Menu;
 use Tags::HTML::Commons::Vote::Newcomers;
 use Tags::HTML::Commons::Vote::PersonRole;
+use Tags::HTML::Commons::Vote::PersonRoleForm;
 use Tags::HTML::Commons::Vote::Section;
 use Tags::HTML::Commons::Vote::SectionForm;
 use Tags::HTML::Commons::Vote::ThemeForm;
@@ -104,6 +105,10 @@ sub _css {
 	# Person role page.
 	} elsif ($self->{'page'} eq 'role') {
 		$self->{'_html_person_role'}->process_css;
+
+	# Person role form page.
+	} elsif ($self->{'page'} eq 'role_form') {
+		$self->{'_html_person_role_form'}->process_css;
 
 	# Section page.
 	} elsif ($self->{'page'} eq 'section') {
@@ -251,6 +256,11 @@ sub _prepare_app {
 	);
 	$self->{'_html_person_role'}
 		= Tags::HTML::Commons::Vote::PersonRole->new(%p);
+	$self->{'_html_person_role_form'}
+		= Tags::HTML::Commons::Vote::PersonRoleForm->new(
+			%p,
+			'form_link' => '/role_save',
+		);
 	$self->{'_html_section'}
 		= Tags::HTML::Commons::Vote::Section->new(%p);
 	$self->{'_html_section_form'}
@@ -842,6 +852,39 @@ sub _process_actions {
 				});
 		}
 
+	# Load person role form data.
+	} elsif ($self->{'page'} eq 'role_form') {
+
+		# Update person role.
+		if ($self->{'page_id'}) {
+			$self->{'data'}->{'person_role'}
+				= $self->backend->fetch_person_role($self->{'page_id'});
+
+		# Create person role.
+		} else {
+			my $competition_id = $req->parameters->{'competition_id'};
+			if ($competition_id) {
+				$self->{'data'}->{'competition'}
+					= $self->backend->fetch_competition($competition_id);
+			} else {
+				err "No competition id.";
+			}
+		}
+
+		$self->{'data'}->{'roles'} = [];
+		push @{$self->{'data'}->{'roles'}}, $self->backend->fetch_role({'name' => 'competition_admin'});
+		# TODO If competition has jury voting.
+		if (0) {
+			push @{$self->{'data'}->{'roles'}}, $self->backend->fetch_role({'name' => 'jury_member'});
+		}
+
+		# XXX Optimize.
+		$self->{'_html_person_role_form'}->init(
+			$self->{'data'}->{'person_role'},
+			$self->{'data'}->{'roles'},
+			$self->{'data'}->{'competition'},
+		);
+
 	# Load section data.
 	} elsif ($self->{'page'} eq 'section') {
 		if ($self->{'page_id'}) {
@@ -1051,6 +1094,10 @@ sub _tags_middle {
 	# Person role page.
 	} elsif ($self->{'page'} eq 'role') {
 		$self->{'_html_person_role'}->process($self->{'data'}->{'person_role'});
+
+	# Person role form page.
+	} elsif ($self->{'page'} eq 'role_form') {
+		$self->{'_html_person_role_form'}->process;
 
 	# Section page.
 	} elsif ($self->{'page'} eq 'section') {
