@@ -353,7 +353,7 @@ sub _process_actions {
 		};
 		my $results = Data::FormValidator->check($parameters_hr, $profile_hr);
 		if ($results->has_invalid) {
-			err "Paramters are invalid.";
+			err "Parameters are invalid.";
 		}
 		my $dt_from = $self->_date_from_params($req->parameters->{'date_from'});
 		my $dt_to = $self->_date_from_params($req->parameters->{'date_to'});
@@ -456,7 +456,7 @@ sub _process_actions {
 		};
 		my $results = Data::FormValidator->check($parameters_hr, $profile_hr);
 		if ($results->has_invalid) {
-			err "Paramters are invalid.";
+			err "Parameters are invalid.";
 		}
 		my $competition = $self->backend->fetch_competition($req->parameters->{'competition_id'});
 		if (! $competition) {
@@ -558,7 +558,7 @@ sub _process_actions {
 		};
 		my $results = Data::FormValidator->check($parameters_hr, $profile_hr);
 		if ($results->has_invalid) {
-			err "Paramters are invalid.";
+			err "Parameters are invalid.";
 		}
 		my $theme_id = $req->parameters->{'theme_id'};
 		my $theme_to_update = Data::Commons::Vote::Theme->new(
@@ -625,7 +625,7 @@ sub _process_actions {
 		};
 		my $results = Data::FormValidator->check($parameters_hr, $profile_hr);
 		if ($results->has_invalid) {
-			err "Paramters are invalid.";
+			err "Parameters are invalid.";
 		}
 
 		my $competition_id = $req->parameters->{'competition_id'};
