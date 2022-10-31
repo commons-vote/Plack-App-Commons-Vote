@@ -709,6 +709,12 @@ sub _process_actions {
 			$self->backend->delete_competition_validation_options($self->{'page_id'});
 			my $validation = $self->backend->delete_competition_validation($self->{'page_id'});
 
+			# Delete validation results for this validation.
+			$self->backend->delete_validation_bads({
+				'competition_id' => $validation->competition->id,
+				'validation_type_id' => $validation->validation_type->id,
+			});
+
 			# Redirect.
 			$self->_redirect('/competition/'.$validation->competition->id);
 		}
