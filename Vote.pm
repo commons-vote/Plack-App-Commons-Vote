@@ -33,6 +33,7 @@ use Tags::HTML::Commons::Vote::Competition;
 use Tags::HTML::Commons::Vote::CompetitionForm;
 use Tags::HTML::Commons::Vote::CompetitionValidation;
 use Tags::HTML::Commons::Vote::CompetitionValidationForm;
+use Tags::HTML::Commons::Vote::CompetitionVoting;
 use Tags::HTML::Commons::Vote::CompetitionVotingForm;
 use Tags::HTML::Commons::Vote::Competitions;
 use Tags::HTML::Commons::Vote::Main;
@@ -133,6 +134,10 @@ sub _css {
 	} elsif ($self->{'page'} eq 'validation_form') {
 		$self->{'_html_competition_validation_form'}->process_css;
 
+	# Voting type page.
+	} elsif ($self->{'page'} eq 'voting') {
+		$self->{'_html_competition_voting'}->process_css;
+
 	# Competition voting form page.
 	} elsif ($self->{'page'} eq 'voting_form') {
 		$self->{'_html_competition_voting_form'}->process_css;
@@ -222,6 +227,8 @@ sub _prepare_app {
 			%p,
 			'form_link' => '/validation_save',
 		);
+	$self->{'_html_competition_voting'}
+		= Tags::HTML::Commons::Vote::CompetitionVoting->new(%p);
 	$self->{'_html_competition_voting_form'}
 		= Tags::HTML::Commons::Vote::CompetitionVotingForm->new(
 			%p,
@@ -1171,6 +1178,13 @@ END
 			$self->{'data'}->{'validation_type_options'},
 		);
 
+	# Load competition voting data.
+	} elsif ($self->{'page'} eq 'voting') {
+		if ($self->{'page_id'}) {
+			$self->{'data'}->{'voting_type'}
+				= $self->backend->fetch_competition_voting($self->{'page_id'});
+		}
+
 	# Competition voting form page.
 	} elsif ($self->{'page'} eq 'voting_form') {
 
@@ -1318,6 +1332,10 @@ sub _tags_middle {
 	# Validation form page.
 	} elsif ($self->{'page'} eq 'validation_form') {
 		$self->{'_html_competition_validation_form'}->process;
+
+	# Voting type page.
+	} elsif ($self->{'page'} eq 'voting') {
+		$self->{'_html_competition_voting'}->process($self->{'data'}->{'voting_type'});
 
 	# Competition voting form page.
 	} elsif ($self->{'page'} eq 'voting_form') {
