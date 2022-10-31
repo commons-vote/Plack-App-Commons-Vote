@@ -13,6 +13,7 @@ use Commons::Vote::Fetcher;
 use Data::Commons::Vote::Competition;
 use Data::Commons::Vote::CompetitionValidation;
 use Data::Commons::Vote::CompetitionValidationOption;
+use Data::Commons::Vote::CompetitionVoting;
 use Data::Commons::Vote::Log;
 use Data::Commons::Vote::PersonRole;
 use Data::Commons::Vote::Theme;
@@ -780,6 +781,47 @@ sub _process_actions {
 			$self->_redirect('/competition/'.$competition_validation->competition->id);
 		} else {
 			$self->{'page'} = 'validation_form';
+		}
+
+	# Save voting type.
+	} elsif ($self->{'page'} eq 'voting_save') {
+		my $parameters_hr = $req->parameters->as_hashref;
+		my $profile_hr = {
+			'required' => ['competition_id', 'competition_voting_id', 'date_from', 'date_to'],
+		};
+		my $results = Data::FormValidator->check($parameters_hr, $profile_hr);
+		if ($results->has_invalid) {
+			err "Parameters are invalid.";
+		}
+		my $dt_from = $self->_date_from_params($req->parameters->{'date_from'});
+		my $dt_to = $self->_date_from_params($req->parameters->{'date_to'});
+
+		my $competition_id = $req->parameters->{'competition_id'};
+		my $competition = $self->backend->fetch_competition($competition_id);
+
+		my $voting_type_id = $req->parameters->{'voting_type_id'};
+		my $voting_type = $self->backend->fetch_voting_type({
+			'voting_type_id' => $voting_type_id,
+		});
+
+		my $competition_voting = Data::Commons::Vote::CompetitionVoting->new(
+			'competition' => $competition,
+			'created_by' => $self->{'login_user'},
+			'dt_from' => $dt_from,
+			'dt_to' => $dt_to,
+			'number_of_votes' => $req->parameters->{'number_of_votes'} || undef,
+			'voting_type' => $voting_type,
+		);
+		$competition_voting = $self->backend->save_competition_voting($competition_voting);
+
+		if ($competition_voting->id) {
+			$self->{'page'} = 'competition';
+			$self->{'page_id'} = $competition_voting->competition->id;
+
+			# Redirect.
+			$self->_redirect('/competition/'.$competition_voting->competition->id);
+		} else {
+			$self->{'page'} = 'voting_form';
 		}
 
 	# Save vote.
