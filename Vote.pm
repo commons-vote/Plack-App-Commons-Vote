@@ -483,7 +483,6 @@ sub _process_actions {
 			$self->_redirect('/competition/'.$competition->id);
 		} else {
 			$self->{'page'} = 'competition_form';
-			# TODO Values from form.
 		}
 
 	# Save role.
@@ -552,7 +551,6 @@ sub _process_actions {
 			$self->_redirect('/competition/'.$competition->id);
 		} else {
 			$self->{'page'} = 'role_form';
-			# TODO Values from form.
 		}
 
 	# Save section.
@@ -615,7 +613,6 @@ sub _process_actions {
 			$self->_redirect('/section/'.$section->id);
 		} else {
 			$self->{'page'} = 'section_form';
-			# TODO Values from form.
 		}
 
 	# Remove role.
@@ -715,7 +712,6 @@ sub _process_actions {
 			$self->_redirect('/theme/'.$theme->id);
 		} else {
 			$self->{'page'} = 'theme_form';
-			# TODO Values from form.
 		}
 
 	# Remove validation.
