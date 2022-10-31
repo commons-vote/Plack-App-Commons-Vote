@@ -231,7 +231,7 @@ sub _prepare_app {
 			my ($grid_self, $image) = @_;
 
 			my $count = $self->backend->count_validation_bad({
-				'competition_id' => $self->{'data'}->{'section'}->competition->id,
+				'competition_id' => $self->{'data'}->{'competition'}->id,
 				'image_id' => $image->id,
 			});
 
@@ -848,6 +848,8 @@ sub _process_actions {
 
 			# Get information about section.
 			$self->{'data'}->{'section'} = $self->backend->fetch_section($self->{'page_id'});
+
+			$self->{'data'}->{'competition'} = $self->{'data'}->{'section'}->competition;
 
 			# URL parameters.
 			my $page_num = $req->parameters->{'page_num'} || 1;
