@@ -789,7 +789,13 @@ sub _process_actions {
 		# XXX
 		$self->{'section'} = $self->{'_html_main'}->{'text'}->{'eng'}->{'my_competitions'};
 		$self->{'data'}->{'competitions'}
-			= [$self->backend->fetch_competitions({'created_by_id' => $self->{'login_user'}->id})];
+			= [$self->backend->fetch_competitions({
+				'person_roles.person_id' => $self->{'login_user'}->id,
+			}, {
+				'join' => 'person_roles',
+			})];
+		# TODO Jury voting
+		# TODO Public voting
 
 	# Load competition data.
 	} elsif ($self->{'page'} eq 'competition') {
