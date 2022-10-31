@@ -69,6 +69,11 @@ sub _css {
 	} elsif ($self->{'page'} eq 'competition') {
 		$self->{'_html_competition'}->process_css;
 
+	# View competition images.
+	} elsif ($self->{'page'} eq 'competition_images') {
+		$self->{'_html_pager'}->process_css;
+		$self->{'_html_images'}->process_css;
+
 	# Competition form page.
 	} elsif ($self->{'page'} eq 'competition_form') {
 		$self->{'_html_competition_form'}->process_css;
@@ -833,6 +838,39 @@ sub _process_actions {
 			$self->{'data'}->{'competition_form'},
 		);
 
+	# View competition images.
+	} elsif ($self->{'page'} eq 'competition_images') {
+
+		# Competition id.
+		if ($self->{'page_id'}) {
+
+			# Get information about competition.
+			$self->{'data'}->{'competition'} = $self->backend->fetch_competition($self->{'page_id'});
+
+			# URL parameters.
+			my $page_num = $req->parameters->{'page_num'} || 1;
+
+			# Count images.
+			$self->{'data'}->{'images_count'}
+				= $self->backend->count_competition_images($self->{'page_id'});
+			my $pages = pages_num($self->{'data'}->{'images_count'}, $IMAGES_ON_PAGE);
+			my $actual_page = adjust_actual_page($page_num, $pages);
+			my ($begin_index) = compute_index_values($self->{'data'}->{'images_count'},
+				$actual_page, $IMAGES_ON_PAGE);
+
+			# Fetch selected images.
+			$self->{'data'}->{'images'} = [$self->backend->fetch_competition_images($self->{'page_id'}, {
+				'offset' => $begin_index,
+				'rows' => $IMAGES_ON_PAGE,
+			})];
+
+			# Pager.
+			$self->{'data'}->{'pager'} = {
+				'actual_page' => $actual_page,
+				'pages_num' => $pages,
+			};
+		}
+
 	# Load all competition data.
 	} elsif ($self->{'page'} eq 'competitions') {
 		$self->{'data'}->{'competitions'}
@@ -1034,7 +1072,7 @@ sub _process_actions {
 			$validator->validate($self->{'page_id'});
 
 			# Redirect.
-			$self->_redirect('/competition/'.$self->{'page_id'});
+			$self->_redirect('/competition_images/'.$self->{'page_id'});
 		}
 
 	# Load validation data.
@@ -1155,6 +1193,16 @@ sub _tags_middle {
 	# Competition form page.
 	} elsif ($self->{'page'} eq 'competition_form') {
 		$self->{'_html_competition_form'}->process;
+
+	# View competition images.
+	} elsif ($self->{'page'} eq 'competition_images') {
+		$self->{'tags'}->put(
+			['b', 'h1'],
+			['d', $self->{'data'}->{'competition'}->name],
+			['e', 'h1'],
+		);
+		$self->{'_html_images'}->process($self->{'data'}->{'images'});
+		$self->{'_html_pager'}->process($self->{'data'}->{'pager'});
 
 	# List of competitions page.
 	} elsif ($self->{'page'} eq 'competitions') {
