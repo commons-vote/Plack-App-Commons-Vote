@@ -388,50 +388,20 @@ sub _process_actions {
 	if ($self->{'page'} eq 'competition_save') {
 		my $parameters_hr = $req->parameters->as_hashref;
 		my $profile_hr = {
-			'required' => ['date_from', 'date_to', 'name',],
+			'required' => ['name',],
 		};
 		my $results = Data::FormValidator->check($parameters_hr, $profile_hr);
 		if ($results->has_invalid) {
 			err "Parameters are invalid.";
 		}
-		my $dt_from = $self->_date_from_params($req->parameters->{'date_from'});
-		my $dt_to = $self->_date_from_params($req->parameters->{'date_to'});
-		my $jury_voting = defined $req->parameters->{'jury_voting'}
-			&& $req->parameters->{'jury_voting'} eq 'on' ? 1 : 0;
-		my ($dt_jury_voting_from, $dt_jury_voting_to);
-		if ($jury_voting) {
-			$dt_jury_voting_from = $self->_date_from_params(
-				$req->parameters->{'jury_voting_date_from'});
-			$dt_jury_voting_to = $self->_date_from_params(
-				$req->parameters->{'jury_voting_date_from'});
-		}
-		my $public_voting = defined $req->parameters->{'public_voting'}
-			&& $req->parameters->{'public_voting'} eq 'on' ? 1 : 0;
-		my ($dt_public_voting_from, $dt_public_voting_to);
-		if ($public_voting) {
-			$dt_public_voting_from = $self->_date_from_params(
-				$req->parameters->{'public_voting_date_from'});
-			$dt_public_voting_to = $self->_date_from_params(
-				$req->parameters->{'public_voting_date_from'});
-		}
 		my $competition_id = $req->parameters->{'competition_id'} || undef;
 		my $competition_to_update = Data::Commons::Vote::Competition->new(
 			'created_by' => $self->{'login_user'},
-			'dt_from' => $dt_from,
-			'dt_jury_voting_from' => $dt_jury_voting_from,
-			'dt_jury_voting_to' => $dt_jury_voting_to,
-			'dt_public_voting_from' => $dt_public_voting_from,
-			'dt_public_voting_to' => $dt_public_voting_to,
-			'dt_to' => $dt_to,
 			'id' => $competition_id,
-			'jury_voting' => $jury_voting,
-			'jury_max_marking_number' => $req->parameters->{'jury_max_marking_number'} || undef,
 			'logo' => decode_utf8($req->parameters->{'logo'}) || undef,
 			'name' => decode_utf8($req->parameters->{'competition_name'}),
-			'number_of_votes' => $req->parameters->{'number_of_votes'} || undef,
 			'organizer' => decode_utf8($req->parameters->{'organizer'}) || undef,
 			'organizer_logo' => decode_utf8($req->parameters->{'organizer_logo'}) || undef,
-			'public_voting' => $public_voting,
 			'wd_qid' => $req->parameters->{'wd_qid'} || undef,
 		);
 		my $competition;
