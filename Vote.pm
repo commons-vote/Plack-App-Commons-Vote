@@ -801,6 +801,15 @@ sub _process_actions {
 			$self->{'page'} = 'voting_form';
 		}
 
+	# Remove voting type.
+	} elsif ($self->{'page'} eq 'voting_remove') {
+		if ($self->{'page_id'}) {
+			my $competition_voting = $self->backend->delete_competition_voting($self->{'page_id'});
+
+			# Redirect.
+			$self->_redirect('/competition/'.$competition_voting->competition->id);
+		}
+
 	# Save vote.
 	} elsif ($self->{'page'} eq 'vote_save') {
 		my $competition_id = $req->parameters->{'competition_id'};
