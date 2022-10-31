@@ -134,7 +134,7 @@ sub _css {
 		$self->{'_html_competition_validation_form'}->process_css;
 
 	# Competition voting form page.
-	} elsif ($self->{'page'} eq 'voting_type_form') {
+	} elsif ($self->{'page'} eq 'voting_form') {
 		$self->{'_html_competition_voting_form'}->process_css;
 
 	# Theme form page.
@@ -1172,7 +1172,7 @@ END
 		);
 
 	# Competition voting form page.
-	} elsif ($self->{'page'} eq 'voting_type_form') {
+	} elsif ($self->{'page'} eq 'voting_form') {
 
 		# Update competition voting.
 		if ($self->{'page_id'}) {
@@ -1320,7 +1320,7 @@ sub _tags_middle {
 		$self->{'_html_competition_validation_form'}->process;
 
 	# Competition voting form page.
-	} elsif ($self->{'page'} eq 'voting_type_form') {
+	} elsif ($self->{'page'} eq 'voting_form') {
 		$self->{'_html_competition_voting_form'}->process;
 
 	# Voting page.
