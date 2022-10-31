@@ -1045,8 +1045,8 @@ sub _process_actions {
 
 		$self->{'data'}->{'roles'} = [];
 		push @{$self->{'data'}->{'roles'}}, $self->backend->fetch_role({'name' => 'competition_admin'});
-		# TODO If competition has jury voting.
-		if (0) {
+		my $jury_count = $self->backend->count_competition_voting($self->{'data'}->{'competition'}->id);
+		if ($jury_count) {
 			push @{$self->{'data'}->{'roles'}}, $self->backend->fetch_role({'name' => 'jury_member'});
 		}
 
