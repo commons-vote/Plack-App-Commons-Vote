@@ -32,6 +32,7 @@ use Tags::HTML::Commons::Vote::Competition;
 use Tags::HTML::Commons::Vote::CompetitionForm;
 use Tags::HTML::Commons::Vote::CompetitionValidation;
 use Tags::HTML::Commons::Vote::CompetitionValidationForm;
+use Tags::HTML::Commons::Vote::CompetitionVotingForm;
 use Tags::HTML::Commons::Vote::Competitions;
 use Tags::HTML::Commons::Vote::Main;
 use Tags::HTML::Commons::Vote::Menu;
@@ -131,6 +132,10 @@ sub _css {
 	} elsif ($self->{'page'} eq 'validation_form') {
 		$self->{'_html_competition_validation_form'}->process_css;
 
+	# Competition voting form page.
+	} elsif ($self->{'page'} eq 'voting_type_form') {
+		$self->{'_html_competition_voting_form'}->process_css;
+
 	# Theme form page.
 	} elsif ($self->{'page'} eq 'theme_form') {
 		$self->{'_html_theme_form'}->process_css;
@@ -215,6 +220,11 @@ sub _prepare_app {
 		= Tags::HTML::Commons::Vote::CompetitionValidationForm->new(
 			%p,
 			'form_link' => '/validation_save',
+		);
+	$self->{'_html_competition_voting_form'}
+		= Tags::HTML::Commons::Vote::CompetitionVotingForm->new(
+			%p,
+			'form_link' => '/voting_save',
 		);
 	$self->{'_html_competitions'}
 		= Tags::HTML::Commons::Vote::Competitions->new(%p);
@@ -1153,6 +1163,38 @@ END
 			$self->{'data'}->{'validation_type_options'},
 		);
 
+	# Competition voting form page.
+	} elsif ($self->{'page'} eq 'voting_type_form') {
+
+		# Update competition voting.
+		if ($self->{'page_id'}) {
+			$self->{'data'}->{'competition_voting'}
+				= $self->backend->fetch_competition_voting($self->{'page_id'});
+			$self->{'data'}->{'voting_types'} = [$self->backend->fetch_voting_types];
+			# TODO Minus other voting types than mine.
+
+		# Create competition voting.
+		} else {
+			my $competition_id = $req->parameters->{'competition_id'};
+			if ($competition_id) {
+				$self->{'data'}->{'competition'}
+					= $self->backend->fetch_competition($competition_id);
+
+				# Only not used in competition.
+				$self->{'data'}->{'voting_types'}
+					= [$self->backend->fetch_voting_types_not_used($competition_id)];
+
+			} else {
+				err "No competition id.";
+			}
+		}
+
+		$self->{'_html_competition_voting_form'}->init(
+			$self->{'data'}->{'competition_voting'},
+			$self->{'data'}->{'voting_types'},
+			$self->{'data'}->{'competition'},
+		);
+
 	# Vote page.
 	} elsif ($self->{'page'} eq 'vote') {
 		if ($self->{'page_id'}) {
@@ -1268,6 +1310,10 @@ sub _tags_middle {
 	# Validation form page.
 	} elsif ($self->{'page'} eq 'validation_form') {
 		$self->{'_html_competition_validation_form'}->process;
+
+	# Competition voting form page.
+	} elsif ($self->{'page'} eq 'voting_type_form') {
+		$self->{'_html_competition_voting_form'}->process;
 
 	# Voting page.
 	} elsif ($self->{'page'} eq 'vote') {
