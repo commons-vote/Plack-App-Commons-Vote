@@ -227,6 +227,19 @@ sub _prepare_app {
 			my $image = shift;
 			return '/image/'.$image->id;
 		},
+		'img_select_cb' => sub {
+			my ($grid_self, $image) = @_;
+
+			my $count = $self->backend->count_validation_bad({
+				'competition_id' => $self->{'data'}->{'section'}->competition->id,
+				'image_id' => $image->id,
+			});
+
+			return {
+				'css_background_color' => $count ? 'red' : 'lightgreen',
+				'value' => $count ? $count : decode_utf8('✓'),
+			};
+		},
 		'img_src_cb' => sub {
 			my $image = shift;
 			return $self->{'_link'}->thumb_link($image->commons_name, $IMAGE_GRID_WIDTH);
