@@ -844,7 +844,6 @@ sub _process_actions {
 
 	# Main page.
 	if ($self->{'page'} eq 'main') {
-		# XXX
 		$self->{'section'} = $self->{'_html_main'}->{'text'}->{'eng'}->{'my_competitions'};
 		$self->{'data'}->{'competitions'}
 			= [$self->backend->fetch_competitions({
