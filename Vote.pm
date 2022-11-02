@@ -584,11 +584,11 @@ sub _process_actions {
 			}
 		}
 		if ($section->id) {
-			$self->{'page'} = 'section';
-			$self->{'page_id'} = $section->id;
+			$self->{'page'} = 'competition';
+			$self->{'page_id'} = $section->competition->id;
 
 			# Redirect.
-			$self->_redirect('/section/'.$section->id);
+			$self->_redirect('/competition/'.$section->competition->id);
 		} else {
 			$self->{'page'} = 'section_form';
 		}
