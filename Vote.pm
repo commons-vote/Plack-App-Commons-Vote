@@ -136,6 +136,10 @@ sub _css {
 	} elsif ($self->{'page'} eq 'validation_form') {
 		$self->{'_html_competition_validation_form'}->process_css;
 
+	# Validation report.
+	} elsif ($self->{'page'} eq 'validation_report') {
+		$self->{'_html_table_view'}->process_css;
+
 	# Voting type page.
 	} elsif ($self->{'page'} eq 'voting') {
 		$self->{'_html_competition_voting'}->process_css;
@@ -1034,6 +1038,61 @@ sub _process_actions {
 			$self->{'data'}->{'log'} = $self->backend->fetch_log($self->{'page_id'});
 		}
 
+	# Validation report.
+	} elsif ($self->{'page'} eq 'validation_report') {
+		if ($self->{'page_id'}) {
+			my @bad_validations = $self->backend->{'schema'}->resultset('ValidationBad')->search({
+				'competition_id' => $self->{'page_id'},
+			}, {
+				group_by => [ 'me.image_id' ],
+#				order_by => { -desc => 'validation_count' },
+#				select => [ 'image.image', { count => 'image_id' -as => 'validation_count' } ],
+#				select => [ 'image.image' ],
+				select => [ 'me.image_id' ],
+			});
+			$self->{'data'}->{'validation_report'} = [];
+			push @{$self->{'data'}->{'validation_report'}}, [
+				'Image',
+				'Image information',
+				'Validations',
+			];
+			foreach my $image_db (@bad_validations) {
+				my $image = $image_db->image;
+				my @image_validations = $self->backend->{'schema'}->resultset('ValidationBad')->search({
+					'image_id' => $image->image_id,
+				});
+				my @validations;
+				foreach my $image_validation (@image_validations) {
+					if (@validations) {
+						push @validations, (
+							['b', 'br'],
+							['e', 'br'],
+						);
+					}
+					push @validations, (
+						['d', $image_validation->validation_type->description],
+					);
+				}
+				my @image_info = (
+					['d', $image->width.'x'.$image->height],
+					['b', 'br'],
+					['e', 'br'],
+					['d', 'size: '.$image->size],
+					['b', 'br'],
+					['e', 'br'],
+					['d', 'author: '.$image->uploader->wm_username],
+				);
+				push @{$self->{'data'}->{'validation_report'}}, [
+					Data::HTML::A->new(
+						'data' => $image->image,
+						'url' => $self->{'_link'}->mw_file_link($image->image),
+					),
+					\@image_info,
+					\@validations,
+				];
+			}
+		}
+
 	# Log list.
 	} elsif ($self->{'page'} eq 'logs') {
 		if ($self->{'page_id'}) {
@@ -1338,6 +1397,10 @@ sub _tags_middle {
 		$self->{'tags'}->put(
 			['b', 'h1'],
 			['d', $self->{'data'}->{'competition'}->name],
+			['b', 'a'],
+			['a', 'href', '/validation_report/'.$self->{'page_id'}],
+			['d', '(validation report)'],
+			['e', 'a'],
 			['e', 'h1'],
 		);
 		$self->{'_html_images'}->process($self->{'data'}->{'images'});
@@ -1405,6 +1468,10 @@ sub _tags_middle {
 	# Validation form page.
 	} elsif ($self->{'page'} eq 'validation_form') {
 		$self->{'_html_competition_validation_form'}->process;
+
+	# Validation report.
+	} elsif ($self->{'page'} eq 'validation_report') {
+		$self->{'_html_table_view'}->process($self->{'data'}->{'validation_report'});
 
 	# Voting type page.
 	} elsif ($self->{'page'} eq 'voting') {
