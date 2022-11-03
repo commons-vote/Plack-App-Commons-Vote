@@ -5,6 +5,7 @@ use strict;
 use warnings;
 
 use Activity::Commons::Vote::Delete;
+use Activity::Commons::Vote::Import;
 use Activity::Commons::Vote::Load;
 use Activity::Commons::Vote::Stats;
 use Activity::Commons::Vote::Validation;
@@ -45,6 +46,7 @@ use Tags::HTML::Commons::Vote::Section;
 use Tags::HTML::Commons::Vote::SectionForm;
 use Tags::HTML::Commons::Vote::ThemeForm;
 use Tags::HTML::Commons::Vote::Vote;
+use Tags::HTML::Commons::Vote::WikidataForm;
 use Tags::HTML::Image;
 use Tags::HTML::Image::Grid;
 use Tags::HTML::Login::Register;
@@ -149,6 +151,10 @@ sub _css {
 	# Vote page.
 	} elsif ($self->{'page'} eq 'vote') {
 		$self->{'_html_vote'}->process_css;
+
+	# Wikidata form page.
+	} elsif ($self->{'page'} eq 'wikidata_form') {
+		$self->{'_html_wikidata_form'}->process_css;
 	}
 
 	return;
@@ -315,6 +321,11 @@ sub _prepare_app {
 	$self->{'_html_vote'} = Tags::HTML::Commons::Vote::Vote->new(%p,
 		'form_link' => '/vote_save',
 	);
+	$self->{'_html_wikidata_form'}
+		= Tags::HTML::Commons::Vote::WikidataForm->new(
+			%p,
+			'form_link' => '/import_competition',
+		);
 
 	return;
 }
@@ -464,6 +475,28 @@ sub _process_actions {
 		} else {
 			$self->{'page'} = 'competition_form';
 		}
+
+	# Import competition from Wikidata.
+	} elsif ($self->{'page'} eq 'import_competition') {
+
+		my $competition_qid = $req->parameters->{'competition_qid'};
+
+		my $import = Activity::Commons::Vote::Import->new(
+			'backend' => $self->backend,
+			'creator' => $self->{'login_user'},
+		);
+		my $competition_id = $import->wd_competition($competition_qid);
+
+		if ($competition_id) {
+			$self->{'page'} = 'competition';
+			$self->{'page_id'} = $competition_id;
+
+			# Redirect.
+			$self->_redirect('/competition/'.$competition_id);
+		} else {
+			$self->{'page'} = 'wikidata_form';
+		}
+
 
 	# Save role.
 	} elsif ($self->{'page'} eq 'role_save') {
@@ -1268,6 +1301,10 @@ END
 #			$self->{'data'}->{'vote'} = \@res;
 		}
 
+	# Wikidata form.
+	} elsif ($self->{'page'} eq 'wikidata_form') {
+		$self->{'_html_wikidata_form'}->init;
+
 	# XXX Dump content
 	} elsif ($self->{'page'} eq 'unknown') {
 		$self->{'content'} = p $req;
@@ -1380,6 +1417,10 @@ sub _tags_middle {
 	# Voting page.
 	} elsif ($self->{'page'} eq 'vote') {
 		$self->{'_html_vote'}->process($self->{'data'}->{'vote'});
+
+	# Wikidata form page.
+	} elsif ($self->{'page'} eq 'wikidata_form') {
+		$self->{'_html_wikidata_form'}->process;
 
 	# XXX (debug) Unknown.
 	} else {
