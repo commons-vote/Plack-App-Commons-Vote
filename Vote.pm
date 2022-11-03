@@ -413,7 +413,9 @@ sub _process_actions {
 		);
 		my $competition;
 		if ($competition_id) {
-			$competition = $self->backend->fetch_competition($competition_id);
+			$competition = $self->backend->fetch_competition({
+				'competition_id' => $competition_id,
+			});
 			if ($competition->created_by->id eq $self->{'login_user'}->id) {
 				$competition = $self->backend->update_competition(
 					$competition_to_update,
@@ -473,7 +475,9 @@ sub _process_actions {
 		if ($results->has_invalid) {
 			err "Parameters are invalid.";
 		}
-		my $competition = $self->backend->fetch_competition($req->parameters->{'competition_id'});
+		my $competition = $self->backend->fetch_competition({
+			'competition_id' => $req->parameters->{'competition_id'},
+		});
 		if (! $competition) {
 			err "Bad competition.";
 		}
@@ -541,7 +545,9 @@ sub _process_actions {
 		if ($results->has_invalid) {
 			err "Parameters are invalid.";
 		}
-		my $competition = $self->backend->fetch_competition($req->parameters->{'competition_id'});
+		my $competition = $self->backend->fetch_competition({
+			'competition_id' => $req->parameters->{'competition_id'},
+		});
 		if (! $competition) {
 			err "Bad competition.";
 		}
@@ -720,7 +726,9 @@ sub _process_actions {
 		}
 
 		my $competition_id = $req->parameters->{'competition_id'};
-		my $competition = $self->backend->fetch_competition($competition_id);
+		my $competition = $self->backend->fetch_competition({
+			'competition_id' => $competition_id,
+		});
 
 		my $validation_type_id = $req->parameters->{'validation_type_id'};
 		my $validation_type = $self->backend->fetch_validation_type({
@@ -774,7 +782,9 @@ sub _process_actions {
 		my $dt_to = $self->_date_from_params($req->parameters->{'date_to'});
 
 		my $competition_id = $req->parameters->{'competition_id'};
-		my $competition = $self->backend->fetch_competition($competition_id);
+		my $competition = $self->backend->fetch_competition({
+			'competition_id' => $competition_id,
+		});
 
 		my $voting_type_id = $req->parameters->{'voting_type_id'};
 		my $voting_type = $self->backend->fetch_voting_type({
@@ -858,7 +868,14 @@ sub _process_actions {
 	} elsif ($self->{'page'} eq 'competition') {
 		if ($self->{'page_id'} && $self->_check_access({'competition_id' => $self->{'page_id'}})) {
 			$self->{'data'}->{'competition'}
-				= $self->backend->fetch_competition($self->{'page_id'});
+				= $self->backend->fetch_competition({
+					'competition_id' => $self->{'page_id'},
+				}, {}, {
+					'person_roles' => 1,
+					'sections' => 1,
+					'validations' => 1,
+					'votings' => 1,
+				});
 		}
 
 	# Load competition form data.
@@ -878,7 +895,9 @@ sub _process_actions {
 		if ($self->{'page_id'}) {
 
 			# Get information about competition.
-			$self->{'data'}->{'competition'} = $self->backend->fetch_competition($self->{'page_id'});
+			$self->{'data'}->{'competition'} = $self->backend->fetch_competition({
+				'competition_id' => $self->{'page_id'},
+			});
 
 			# URL parameters.
 			my $page_num = $req->parameters->{'page_num'} || 1;
@@ -963,7 +982,9 @@ sub _process_actions {
 					$env->{'psgi.errors'}->print(encode_utf8($message)."\n");
 				},
 			);
-			my $competition = $self->backend->fetch_competition($self->{'page_id'});
+			my $competition = $self->backend->fetch_competition({
+				'competition_id' => $self->{'page_id'},
+			});
 			my $delete = Activity::Commons::Vote::Delete->new(%p);
 			$delete->delete_competition_section_images($competition);
 			my $load = Activity::Commons::Vote::Load->new(%p);
@@ -1036,7 +1057,9 @@ sub _process_actions {
 			my $competition_id = $req->parameters->{'competition_id'};
 			if ($competition_id) {
 				$self->{'data'}->{'competition'}
-					= $self->backend->fetch_competition($competition_id);
+					= $self->backend->fetch_competition({
+					'competition_id' => $competition_id,
+				});
 			} else {
 				err "No competition id.";
 			}
@@ -1072,7 +1095,9 @@ sub _process_actions {
 			my $competition_id = $req->parameters->{'competition_id'};
 			if ($competition_id) {
 				$self->{'data'}->{'competition'}
-					= $self->backend->fetch_competition($competition_id);
+					= $self->backend->fetch_competition({
+					'competition_id' => $competition_id,
+				});
 			} else {
 				err "No competition id.";
 			}
@@ -1156,7 +1181,9 @@ END
 			my $competition_id = $req->parameters->{'competition_id'};
 			if ($competition_id) {
 				$self->{'data'}->{'competition'}
-					= $self->backend->fetch_competition($competition_id);
+					= $self->backend->fetch_competition({
+					'competition_id' => $competition_id,
+				});
 
 				# Only not used in competition.
 				$self->{'data'}->{'validation_types'}
@@ -1208,7 +1235,9 @@ END
 			my $competition_id = $req->parameters->{'competition_id'};
 			if ($competition_id) {
 				$self->{'data'}->{'competition'}
-					= $self->backend->fetch_competition($competition_id);
+					= $self->backend->fetch_competition({
+					'competition_id' => $competition_id,
+				});
 
 				# Only not used in competition.
 				$self->{'data'}->{'voting_types'}
