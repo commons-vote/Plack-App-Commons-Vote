@@ -919,7 +919,9 @@ sub _process_actions {
 	} elsif ($self->{'page'} eq 'competition_form') {
 		if ($self->{'page_id'} && $self->_check_access({'competition_id' => $self->{'page_id'}})) {
 			$self->{'data'}->{'competition_form'}
-				= $self->backend->fetch_competition($self->{'page_id'});
+				= $self->backend->fetch_competition({
+				'competition_id' => $self->{'page_id'},
+			});
 		}
 		$self->{'_html_competition_form'}->init(
 			$self->{'data'}->{'competition_form'},
