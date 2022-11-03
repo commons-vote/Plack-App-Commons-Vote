@@ -1114,6 +1114,7 @@ sub _process_actions {
 			$self->{'data'}->{'theme_form'}
 				= $self->backend->fetch_theme($self->{'page_id'});
 		}
+		$self->{'_html_theme_form'}->init($self->{'data'}->{'theme_form'});
 
 	# Validate competition.
 	} elsif ($self->{'page'} eq 'validate') {
@@ -1358,9 +1359,7 @@ sub _tags_middle {
 
 	# Theme form page.
 	} elsif ($self->{'page'} eq 'theme_form') {
-		$self->{'_html_theme_form'}->process(
-			$self->{'data'}->{'theme_form'},
-		);
+		$self->{'_html_theme_form'}->process;
 
 	# Validation page.
 	} elsif ($self->{'page'} eq 'validation') {
