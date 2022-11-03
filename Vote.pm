@@ -90,6 +90,7 @@ sub _css {
 	# View image.
 	} elsif ($self->{'page'} eq 'image') {
 		$self->{'_html_image'}->process_css;
+		$self->{'_html_table_view'}->process_css;
 
 	# View images.
 	} elsif ($self->{'page'} eq 'images') {
@@ -973,6 +974,45 @@ sub _process_actions {
 		# Image id.
 		if ($self->{'page_id'}) {
 			$self->{'data'}->{'image'} = $self->backend->fetch_image($self->{'page_id'});
+
+			push @{$self->{'data'}->{'image_metadata'}}, [
+				'Information',
+				'Value',
+			], [
+				'Wikimedia username',
+				[
+					['b', 'a'],
+					['a', 'href', $self->{'_link'}->mw_user_link($self->{'data'}->{'image'}->uploader->wm_username)],
+					['d', $self->{'data'}->{'image'}->uploader->wm_username],
+					['e', 'a'],
+				],
+			], [
+				'Comment',
+				$self->{'data'}->{'image'}->comment,
+			], [
+				'License',
+				$self->{'data'}->{'image'}->license_obj->text,
+			], [
+				'Dimensions',
+				$self->{'data'}->{'image'}->width.'x'.$self->{'data'}->{'image'}->height,
+			], [
+				'Size',
+				$self->{'data'}->{'image'}->size,
+			], [
+				'Created',
+				$self->{'data'}->{'image'}->dt_created->stringify,
+			], [
+				'Uploaded',
+				$self->{'data'}->{'image'}->dt_uploaded->stringify,
+			], [
+				'Image on Wikimedia Commons',
+				[
+					['b', 'a'],
+					['a', 'href', $self->{'_link'}->mw_file_link($self->{'data'}->{'image'}->commons_name)],
+					['d', $self->{'data'}->{'image'}->commons_name],
+					['e', 'a'],
+				],
+			];
 		}
 
 	# View images.
@@ -1419,6 +1459,7 @@ sub _tags_middle {
 	# View image.
 	} elsif ($self->{'page'} eq 'image') {
 		$self->{'_html_image'}->process($self->{'data'}->{'image'});
+		$self->{'_html_table_view'}->process($self->{'data'}->{'image_metadata'});
 
 	# View images.
 	} elsif ($self->{'page'} eq 'images') {
