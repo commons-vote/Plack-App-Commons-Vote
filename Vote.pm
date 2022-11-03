@@ -545,7 +545,7 @@ sub _process_actions {
 
 		# Create person in db.
 		} else {
-			my $user_id = $self->{'_fetcher'}->user_exists($req->parameters->{'wm_username'});
+			my $user_id = $self->{'_fetcher'}->user_exists(decode_utf8($req->parameters->{'wm_username'}));
 			if (! defined $user_id) {
 				err "Username doesn't exists.",
 					'Wikimedia username', $wm_username,
