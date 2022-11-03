@@ -1080,7 +1080,11 @@ sub _process_actions {
 					['d', 'size: '.$image->size],
 					['b', 'br'],
 					['e', 'br'],
-					['d', 'author: '.$image->uploader->wm_username],
+					['d', 'author: '],
+					['b', 'a'],
+					['a', 'href', $self->{'_link'}->mw_user_link($image->uploader->wm_username)],
+					['d', $image->uploader->wm_username],
+					['e', 'a'],
 				);
 				push @{$self->{'data'}->{'validation_report'}}, [
 					Data::HTML::A->new(
