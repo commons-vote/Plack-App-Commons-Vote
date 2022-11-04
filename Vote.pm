@@ -710,13 +710,17 @@ sub _process_actions {
 					'role_id' => $person_role->role->id,
 				});
 				if ($count_other > 1) {
-					$self->backend->delete_person_role($person_role_id);
+					$self->backend->delete_person_role({
+						'person_role_id' => $person_role_id,
+					});
 				} else {
 					# XXX Error message to somewhere.
 					#err "Cannot delete last role.";
 				}
 			} else {
-				$self->backend->delete_person_role($person_role_id);
+				$self->backend->delete_person_role({
+					'person_role_id' => $person_role_id,
+				});
 			}
 
 			# Redirect.
