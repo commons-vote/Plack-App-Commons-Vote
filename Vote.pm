@@ -174,6 +174,10 @@ sub _css {
 			$self->{'_html_images_vote'}->process_css;
 		}
 
+	# Voting stats,
+	} elsif ($self->{'page'} eq 'vote_stats') {
+		$self->{'_html_table_view'}->process_css;
+
 	# Wikidata form page.
 	} elsif ($self->{'page'} eq 'wikidata_form') {
 		$self->{'_html_wikidata_form'}->process_css;
@@ -1597,6 +1601,30 @@ END
 			}
 		}
 
+	# Voting stats,
+	} elsif ($self->{'page'} eq 'vote_stats') {
+		if (defined $self->{'page_id'}) {
+			my $competition_voting_id = $self->{'page_id'};
+			my $count_competition_voting = $self->backend->count_competition_voting({
+				'competition_voting_id' => $competition_voting_id,
+			});
+			if ($count_competition_voting) {
+				$self->{'data'}->{'vote_stats'} = [];
+				push @{$self->{'data'}->{'vote_stats'}}, [
+					'Image',
+					'Wikimedia username',
+					'Count of votes',
+				];
+				foreach my $vote_stat ($self->backend->fetch_vote_counted($competition_voting_id)) {
+					push @{$self->{'data'}->{'vote_stats'}}, [
+						$vote_stat->image->commons_name,
+						$vote_stat->image->uploader->wm_username,
+						$vote_stat->vote_count,
+					];
+				}
+			}
+		}
+
 	# Wikidata form.
 	} elsif ($self->{'page'} eq 'wikidata_form') {
 		$self->{'_html_wikidata_form'}->init;
@@ -1739,6 +1767,10 @@ sub _tags_middle {
 				['d', 'No images.'],
 			);
 		}
+
+	# Voting stats,
+	} elsif ($self->{'page'} eq 'vote_stats') {
+		$self->{'_html_table_view'}->process($self->{'data'}->{'vote_stats'});
 
 	# Wikidata form page.
 	} elsif ($self->{'page'} eq 'wikidata_form') {
