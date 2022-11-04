@@ -1573,7 +1573,7 @@ END
 
 				# Count images.
 				$self->{'data'}->{'images_count'}
-					= $self->backend->count_competition_images($competition_id);
+					= $self->backend->count_competition_images_valid($competition_id);
 				my $pages = pages_num($self->{'data'}->{'images_count'}, $IMAGES_ON_PAGE);
 				my $actual_page = adjust_actual_page($page_num, $pages);
 				my ($begin_index) = compute_index_values($self->{'data'}->{'images_count'},
@@ -1581,7 +1581,7 @@ END
 
 				# Fetch selected images.
 				$self->{'data'}->{'images'} = [
-					$self->backend->fetch_competition_images(
+					$self->backend->fetch_competition_images_valid(
 						$competition_id, {
 							'offset' => $begin_index,
 							'rows' => $IMAGES_ON_PAGE,
