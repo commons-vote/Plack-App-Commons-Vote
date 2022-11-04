@@ -922,34 +922,67 @@ sub _process_actions {
 
 	# Save vote.
 	} elsif ($self->{'page'} eq 'vote_save') {
-		my $competition_id = $req->parameters->{'competition_id'};
+		my $competition_voting_id = $req->parameters->{'competition_voting_id'};
+		my $count_competition_voting = $self->backend->count_competition_voting_by_now({
+			'competition_voting_id' => $competition_voting_id,
+		});
 		my $image_id = $req->parameters->{'image_id'};
-		my $vote_type_id = $req->parameters->{'vote_type_id'};
-		# TODO vote
+		my $count_image = $self->backend->count_image($image_id);
+		if ($count_image && $count_competition_voting) {
+			my $competition_voting = $self->backend->fetch_competition_voting($competition_voting_id);
+			my $vote_value = $req->parameters->{'vote_value'};
 
-		# Check type of voting.
-		# TODO
+			my $voting_type = $competition_voting->voting_type->type;
+			my $person;
+			if ($voting_type eq 'jury_voting' || $voting_type eq 'login_voting') {
+				$person = $self->{'login_user'};
+			}
 
-		# Check date of voting.
-		# TODO
+			# Check voting.
+			my $count_vote = $self->backend->count_vote({
+				'competition_voting_id' => $competition_voting_id,
+				'image_id' => $image_id,
+				defined $person ? ('person_id' => $person->id) : (),
+			});
 
-		my $competition = $self->backend->fetch_competition({
-			'competition_id' => $competition_id,
-		});
-		my $image = $self->backend->fetch_image({
-			'image_id' => $image_id,
-		});
-		my $vote_type = $self->backend->fetch_vote_type({
-			'vote_type_id' => $vote_type_id,
-		});
+			# Vote exists.
+			if ($count_vote
+				# Update jury voting.
+				&& ($voting_type eq 'jury_voting'
+				# Unvote.
+				|| ($voting_type eq 'login_voting' && $vote_value eq ''))) {
 
-		my $vote = $self->backend->save_vote(Data::Commons::Vote::Vote->new(
-			'competition' => $competition,
-			'image' => $image,
-			'person' => $self->{'login_user'},
-			'vote_type' => $vote_type,
-			'vote_value' => 1,
-		));
+				$self->backend->delete_vote({
+					'competition_voting_id' => $competition_voting_id,
+					'image_id' => $image_id,
+					'person_id' => $person->id,
+				});
+			}
+			# Save new anonymous vote.
+			if (($voting_type eq 'anonymous_voting' && ! $count_vote)
+				# Save jury vote.
+				|| $voting_type eq 'jury_voting'
+				# Save login vote.
+				|| ($voting_type eq 'login_voting' && $vote_value ne '')) {
+
+				my $image = $self->backend->fetch_image($image_id);
+				$self->backend->save_vote(Data::Commons::Vote::Vote->new(
+					'competition_voting' => $competition_voting,
+					'image' => $image,
+					defined $person ? ('person' => $person) : (),
+					'vote_value' => $vote_value,
+				));
+			}
+			if ($competition_voting->id) {
+				$self->{'page'} = 'vote_images';
+				$self->{'page_id'} = $competition_voting->id;
+
+				# Redirect.
+				$self->_redirect('/vote_images/'.$competition_voting->id);
+			} else {
+				$self->{'page'} = 'vote_image';
+			}
+		}
 	}
 
 	# Main page.
