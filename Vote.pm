@@ -189,10 +189,11 @@ sub _css {
 sub _check_access {
 	my ($self, $cond_hr) = @_;
 
-	if (exists $cond_hr->{'competition_id'}) {
+	if (exists $cond_hr->{'competition_id'} && $cond_hr->{'role_id'}) {
 		my $count = $self->backend->count_person_role({
 			'competition_id' => $cond_hr->{'competition_id'},
 			'person_id' => $self->{'login_user'}->id,
+			'role_id' => $cond_hr->{'role_id'},
 		});
 		if ($count) {
 			return 1;
@@ -494,8 +495,13 @@ sub _process_actions {
 			'wd_qid' => $req->parameters->{'wd_qid'} || undef,
 		);
 		my $competition;
+		my $competition_role = $self->backend->fetch_role({'name' => 'competition_admin'});
 		if ($competition_id) {
-			if ($self->_check_access({'competition_id' => $competition_id})) {
+			if ($self->_check_access({
+					'competition_id' => $competition_id,
+					'role_id' => $competition_role->id,
+				})) {
+
 				$competition = $self->backend->update_competition(
 					$competition_id,
 					$competition_to_update,
@@ -517,7 +523,6 @@ sub _process_actions {
 			$competition = $self->backend->save_competition(
 				$competition_to_update,
 			);
-			my $competition_role = $self->backend->fetch_role({'name' => 'competition_admin'});
 			$self->backend->save_person_role(Data::Commons::Vote::PersonRole->new(
 				'competition' => $competition,
 				'created_by' => $self->{'login_user'},
@@ -949,49 +954,67 @@ sub _process_actions {
 		my $count_image = $self->backend->count_image($image_id);
 		if ($count_image && $count_competition_voting) {
 			my $competition_voting = $self->backend->fetch_competition_voting($competition_voting_id);
-			my $vote_value = $req->parameters->{'vote_value'};
-
 			my $voting_type = $competition_voting->voting_type->type;
-			my $person;
-			if ($voting_type eq 'jury_voting' || $voting_type eq 'login_voting') {
-				$person = $self->{'login_user'};
+
+			# Check access.
+			my $access = 0;
+			if ($voting_type eq 'jury_voting') {
+				my $jury_role = $self->backend->fetch_role({'name' => 'jury_member'});
+				if ($self->_check_access({
+						'competition_id' => $competition_voting->competition->id,
+						'role_id' => $jury_role->id,
+					})) {
+
+					$access = 1;
+				}
+			} else {
+				$access = 1;
 			}
+			if ($access) {
 
-			# Check voting.
-			my $count_vote = $self->backend->count_vote({
-				'competition_voting_id' => $competition_voting_id,
-				'image_id' => $image_id,
-				defined $person ? ('person_id' => $person->id) : (),
-			});
+				my $person;
+				if ($voting_type eq 'jury_voting' || $voting_type eq 'login_voting') {
+					$person = $self->{'login_user'};
+				}
 
-			# Vote exists.
-			if ($count_vote
-				# Update jury voting.
-				&& ($voting_type eq 'jury_voting'
-				# Unvote.
-				|| ($voting_type eq 'login_voting' && $vote_value eq ''))) {
-
-				$self->backend->delete_vote({
+				# Check voting.
+				my $count_vote = $self->backend->count_vote({
 					'competition_voting_id' => $competition_voting_id,
 					'image_id' => $image_id,
-					'person_id' => $person->id,
+					defined $person ? ('person_id' => $person->id) : (),
 				});
-			}
-			# Save new anonymous vote.
-			if (($voting_type eq 'anonymous_voting' && ! $count_vote)
-				# Save jury vote.
-				|| $voting_type eq 'jury_voting'
-				# Save login vote.
-				|| ($voting_type eq 'login_voting' && $vote_value ne '')) {
 
-				my $image = $self->backend->fetch_image($image_id);
-				$self->backend->save_vote(Data::Commons::Vote::Vote->new(
-					'competition_voting' => $competition_voting,
-					'image' => $image,
-					defined $person ? ('person' => $person) : (),
-					'vote_value' => $vote_value,
-				));
+				# Vote exists.
+				my $vote_value = $req->parameters->{'vote_value'};
+				if ($count_vote
+					# Update jury voting.
+					&& ($voting_type eq 'jury_voting'
+					# Unvote.
+					|| ($voting_type eq 'login_voting' && $vote_value eq ''))) {
+
+					$self->backend->delete_vote({
+						'competition_voting_id' => $competition_voting_id,
+						'image_id' => $image_id,
+						'person_id' => $person->id,
+					});
+				}
+				# Save new anonymous vote.
+				if (($voting_type eq 'anonymous_voting' && ! $count_vote)
+					# Save jury vote.
+					|| $voting_type eq 'jury_voting'
+					# Save login vote.
+					|| ($voting_type eq 'login_voting' && $vote_value ne '')) {
+
+					my $image = $self->backend->fetch_image($image_id);
+					$self->backend->save_vote(Data::Commons::Vote::Vote->new(
+						'competition_voting' => $competition_voting,
+						'image' => $image,
+						defined $person ? ('person' => $person) : (),
+						'vote_value' => $vote_value,
+					));
+				}
 			}
+
 			if ($competition_voting->id) {
 				$self->{'page'} = 'vote_images';
 				$self->{'page_id'} = $competition_voting->id;
@@ -1018,25 +1041,39 @@ sub _process_actions {
 
 	# Load competition data.
 	} elsif ($self->{'page'} eq 'competition') {
-		if ($self->{'page_id'} && $self->_check_access({'competition_id' => $self->{'page_id'}})) {
-			$self->{'data'}->{'competition'}
-				= $self->backend->fetch_competition({
+		if ($self->{'page_id'}) {
+			my $competition_role = $self->backend->fetch_role({'name' => 'competition_admin'});
+			if ($self->_check_access({
 					'competition_id' => $self->{'page_id'},
-				}, {}, {
-					'person_roles' => 1,
-					'sections' => 1,
-					'validations' => 1,
-					'votings' => 1,
-				});
+					'role_id' => $competition_role->id,
+				})) {
+
+				$self->{'data'}->{'competition'}
+					= $self->backend->fetch_competition({
+						'competition_id' => $self->{'page_id'},
+					}, {}, {
+						'person_roles' => 1,
+						'sections' => 1,
+						'validations' => 1,
+						'votings' => 1,
+					});
+			}
 		}
 
 	# Load competition form data.
 	} elsif ($self->{'page'} eq 'competition_form') {
-		if ($self->{'page_id'} && $self->_check_access({'competition_id' => $self->{'page_id'}})) {
-			$self->{'data'}->{'competition_form'}
-				= $self->backend->fetch_competition({
-				'competition_id' => $self->{'page_id'},
-			});
+		if ($self->{'page_id'}) {
+			my $competition_role = $self->backend->fetch_role({'name' => 'competition_admin'});
+			if ($self->_check_access({
+					'competition_id' => $self->{'page_id'},
+					'role_id' => $competition_role->id,
+				})) {
+
+				$self->{'data'}->{'competition_form'}
+					= $self->backend->fetch_competition({
+					'competition_id' => $self->{'page_id'},
+				});
+			}
 		}
 		$self->{'_html_competition_form'}->init(
 			$self->{'data'}->{'competition_form'},
@@ -1532,23 +1569,36 @@ END
 				$self->{'data'}->{'competition_voting'}
 					= $self->backend->fetch_competition_voting($competition_voting_id);
 				my $voting_type = $self->{'data'}->{'competition_voting'}->voting_type->type;
-				my $person_id;
-				my $person;
-				if ($voting_type eq 'jury_voting' || $voting_type eq 'login_voting') {
-					$person_id = $self->{'login_user'}->id;
-					$person = $self->{'login_user'};
+				my $jury_role = $self->backend->fetch_role({'name' => 'jury_member'});
+				my $access = 0;
+				if ($voting_type eq 'jury_voting' && $self->_check_access({
+						'competition_id' => $self->{'data'}->{'competition_voting'}->competition->id,
+						'role_id' => $jury_role->id,
+					})) {
+					$access = 1;
+				};
+				if ($voting_type ne 'jury_voting') {
+					$access = 1;
 				}
-				$self->{'data'}->{'vote'} = $self->backend->fetch_vote({
-					'competition_voting_id' => $competition_voting_id,
-					'image_id' => $image_id,
-					'person_id' => $person_id,
-				});
-				if (! defined $self->{'data'}->{'vote'}) {
-					$self->{'data'}->{'vote'} = Data::Commons::Vote::Vote->new(
-						'competition_voting' => $self->{'data'}->{'competition_voting'},
-						'image' => $self->backend->fetch_image($image_id),
-						'person' => $person,
-					);
+				if ($access) {
+					my $person_id;
+					my $person;
+					if ($voting_type eq 'jury_voting' || $voting_type eq 'login_voting') {
+						$person_id = $self->{'login_user'}->id;
+						$person = $self->{'login_user'};
+					}
+					$self->{'data'}->{'vote'} = $self->backend->fetch_vote({
+						'competition_voting_id' => $competition_voting_id,
+						'image_id' => $image_id,
+						'person_id' => $person_id,
+					});
+					if (! defined $self->{'data'}->{'vote'}) {
+						$self->{'data'}->{'vote'} = Data::Commons::Vote::Vote->new(
+							'competition_voting' => $self->{'data'}->{'competition_voting'},
+							'image' => $self->backend->fetch_image($image_id),
+							'person' => $person,
+						);
+					}
 				}
 			}
 		}
@@ -1565,39 +1615,53 @@ END
 			if ($count_competition_voting) {
 				$self->{'data'}->{'competition_voting'}
 					= $self->backend->fetch_competition_voting($competition_voting_id);
-
-				# Get information about competition.
-				my $competition_id = $self->{'data'}->{'competition_voting'}->competition->id;
-				$self->{'data'}->{'competition'} = $self->backend->fetch_competition({
-					'competition_id' => $competition_id,
-				});
-
-				# URL parameters.
-				my $page_num = $req->parameters->{'page_num'} || 1;
-
-				# Count images.
-				$self->{'data'}->{'images_count'}
-					= $self->backend->count_competition_images_valid($competition_id);
-				my $pages = pages_num($self->{'data'}->{'images_count'}, $IMAGES_ON_PAGE);
-				my $actual_page = adjust_actual_page($page_num, $pages);
-				my ($begin_index) = compute_index_values($self->{'data'}->{'images_count'},
-					$actual_page, $IMAGES_ON_PAGE);
-
-				# Fetch selected images.
-				$self->{'data'}->{'images'} = [
-					$self->backend->fetch_competition_images_valid(
-						$competition_id, {
-							'offset' => $begin_index,
-							'rows' => $IMAGES_ON_PAGE,
-						},
-					),
-				];
-
-				# Pager.
-				$self->{'data'}->{'pager'} = {
-					'actual_page' => $actual_page,
-					'pages_num' => $pages,
+				my $voting_type = $self->{'data'}->{'competition_voting'}->voting_type->type;
+				my $jury_role = $self->backend->fetch_role({'name' => 'jury_member'});
+				my $access = 0;
+				if ($voting_type eq 'jury_voting' && $self->_check_access({
+						'competition_id' => $self->{'data'}->{'competition_voting'}->competition->id,
+						'role_id' => $jury_role->id,
+					})) {
+					$access = 1;
 				};
+				if ($voting_type ne 'jury_voting') {
+					$access = 1;
+				}
+				if ($access) {
+
+					# Get information about competition.
+					my $competition_id = $self->{'data'}->{'competition_voting'}->competition->id;
+					$self->{'data'}->{'competition'} = $self->backend->fetch_competition({
+						'competition_id' => $competition_id,
+					});
+
+					# URL parameters.
+					my $page_num = $req->parameters->{'page_num'} || 1;
+
+					# Count images.
+					$self->{'data'}->{'images_count'}
+						= $self->backend->count_competition_images_valid($competition_id);
+					my $pages = pages_num($self->{'data'}->{'images_count'}, $IMAGES_ON_PAGE);
+					my $actual_page = adjust_actual_page($page_num, $pages);
+					my ($begin_index) = compute_index_values($self->{'data'}->{'images_count'},
+						$actual_page, $IMAGES_ON_PAGE);
+
+					# Fetch selected images.
+					$self->{'data'}->{'images'} = [
+						$self->backend->fetch_competition_images_valid(
+							$competition_id, {
+								'offset' => $begin_index,
+								'rows' => $IMAGES_ON_PAGE,
+							},
+						),
+					];
+
+					# Pager.
+					$self->{'data'}->{'pager'} = {
+						'actual_page' => $actual_page,
+						'pages_num' => $pages,
+					};
+				}
 			}
 		}
 
