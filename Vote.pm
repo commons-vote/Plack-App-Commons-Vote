@@ -491,11 +491,9 @@ sub _process_actions {
 		);
 		my $competition;
 		if ($competition_id) {
-			$competition = $self->backend->fetch_competition({
-				'competition_id' => $competition_id,
-			});
-			if ($competition->created_by->id eq $self->{'login_user'}->id) {
+			if ($self->_check_access({'competition_id' => $competition_id})) {
 				$competition = $self->backend->update_competition(
+					$competition_id,
 					$competition_to_update,
 				);
 				my $log_type = $self->backend->fetch_log_type_name('update_competition');
