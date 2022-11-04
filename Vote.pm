@@ -1267,7 +1267,9 @@ sub _process_actions {
 
 		$self->{'data'}->{'roles'} = [];
 		push @{$self->{'data'}->{'roles'}}, $self->backend->fetch_role({'name' => 'competition_admin'});
-		my $jury_count = $self->backend->count_competition_voting($self->{'data'}->{'competition'}->id);
+		my $jury_count = $self->backend->count_competition_voting_by_now({
+			'competition_id' => $self->{'data'}->{'competition'}->id,
+		});
 		if ($jury_count) {
 			push @{$self->{'data'}->{'roles'}}, $self->backend->fetch_role({'name' => 'jury_member'});
 		}
