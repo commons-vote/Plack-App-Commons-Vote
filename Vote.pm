@@ -61,6 +61,16 @@ Readonly::Scalar our $IMAGES_ON_PAGE => 24;
 
 our $VERSION = 0.01;
 
+sub _cleanup {
+	my $self = shift;
+
+	if ($self->{'page'} eq 'vote_image') {
+		$self->{'_html_vote'}->cleanup;
+	}
+
+	return;
+}
+
 sub _css {
 	my $self = shift;
 
@@ -153,8 +163,8 @@ sub _css {
 	} elsif ($self->{'page'} eq 'theme_form') {
 		$self->{'_html_theme_form'}->process_css;
 
-	# Vote page.
-	} elsif ($self->{'page'} eq 'vote') {
+	# Voting image.
+	} elsif ($self->{'page'} eq 'vote_image') {
 		$self->{'_html_vote'}->process_css;
 
 	# Wikidata form page.
@@ -325,6 +335,10 @@ sub _prepare_app {
 		);
 	$self->{'_html_vote'} = Tags::HTML::Commons::Vote::Vote->new(%p,
 		'form_link' => '/vote_save',
+		'img_src_cb' => sub {
+			my $image = shift;
+			return $self->{'_link'}->thumb_link($image->commons_name, 1630);
+		},
 	);
 	$self->{'_html_wikidata_form'}
 		= Tags::HTML::Commons::Vote::WikidataForm->new(
@@ -1393,17 +1407,42 @@ END
 			$self->{'data'}->{'competition'},
 		);
 
-	# Vote page.
-	} elsif ($self->{'page'} eq 'vote') {
+	# Voting image.
+	} elsif ($self->{'page'} eq 'vote_image') {
 		if ($self->{'page_id'}) {
-			# TODO Load images in sections.
-#			my @res = map {
-#				{
-#					'image_id' => $_->image_id,
-#					'url' => decode_utf8($_->url),
-#				}
-#			} $self->schema->resultset('Competition')->search;
-#			$self->{'data'}->{'vote'} = \@res;
+			my $image_id = $self->{'page_id'};
+			my $count_image = $self->backend->count_image($image_id);
+			my $competition_voting_id = $req->parameters->{'competition_voting_id'};
+			my $count_competition_voting = $self->backend->count_competition_voting_by_now({
+				'competition_voting_id' => $competition_voting_id,
+			});
+			if ($count_image && $count_competition_voting) {
+				$self->{'data'}->{'competition_voting'}
+					= $self->backend->fetch_competition_voting($competition_voting_id);
+				my $voting_type = $self->{'data'}->{'competition_voting'}->voting_type->type;
+				my $person_id;
+				my $person;
+				if ($voting_type eq 'jury_voting' || $voting_type eq 'login_voting') {
+					$person_id = $self->{'login_user'}->id;
+					$person = $self->{'login_user'};
+				}
+				$self->{'data'}->{'vote'} = $self->backend->fetch_vote({
+					'competition_voting_id' => $competition_voting_id,
+					'image_id' => $image_id,
+					'person_id' => $person_id,
+				});
+				if (! defined $self->{'data'}->{'vote'}) {
+					$self->{'data'}->{'vote'} = Data::Commons::Vote::Vote->new(
+						'competition_voting' => $self->{'data'}->{'competition_voting'},
+						'image' => $self->backend->fetch_image($image_id),
+						'person' => $person,
+					);
+				}
+			}
+		}
+		my $remote_addr = $req->env->{'HTTP_X_REAL_IP'} || $req->env->{'REMOTE_ADDR'};
+		$self->{'_html_vote'}->init($self->{'data'}->{'vote'}, $remote_addr);
+
 		}
 
 	# Wikidata form.
@@ -1528,9 +1567,9 @@ sub _tags_middle {
 	} elsif ($self->{'page'} eq 'voting_form') {
 		$self->{'_html_competition_voting_form'}->process;
 
-	# Voting page.
-	} elsif ($self->{'page'} eq 'vote') {
-		$self->{'_html_vote'}->process($self->{'data'}->{'vote'});
+	# Voting image.
+	} elsif ($self->{'page'} eq 'vote_image') {
+		$self->{'_html_vote'}->process;
 
 	# Wikidata form page.
 	} elsif ($self->{'page'} eq 'wikidata_form') {
