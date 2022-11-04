@@ -920,6 +920,17 @@ sub _process_actions {
 			my $competition_voting_id = $self->{'page_id'};
 			my $competition_voting = $self->backend->delete_competition_voting($competition_voting_id);
 
+			# Delete person roles for jury member.
+			if ($competition_voting->voting_type->type eq 'jury_voting') {
+				my $role = $self->backend->fetch_role({
+					'name' => 'jury_member',
+				});
+				$self->backend->delete_person_role({
+					'competition_id' => $competition_voting->competition->id,
+					'role_id' => $role->id,
+				});
+			}
+
 			# Redirect.
 			$self->_redirect('/competition/'.$competition_voting->competition->id);
 		}
