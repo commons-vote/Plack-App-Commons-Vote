@@ -913,7 +913,8 @@ sub _process_actions {
 	# Remove voting type.
 	} elsif ($self->{'page'} eq 'voting_remove') {
 		if ($self->{'page_id'}) {
-			my $competition_voting = $self->backend->delete_competition_voting($self->{'page_id'});
+			my $competition_voting_id = $self->{'page_id'};
+			my $competition_voting = $self->backend->delete_competition_voting($competition_voting_id);
 
 			# Redirect.
 			$self->_redirect('/competition/'.$competition_voting->competition->id);
