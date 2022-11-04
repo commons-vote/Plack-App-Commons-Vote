@@ -167,6 +167,13 @@ sub _css {
 	} elsif ($self->{'page'} eq 'vote_image') {
 		$self->{'_html_vote'}->process_css;
 
+	# Voting grid.
+	} elsif ($self->{'page'} eq 'vote_images') {
+		if (exists $self->{'data'}->{'images'}) {
+			$self->{'_html_pager'}->process_css;
+			$self->{'_html_images_vote'}->process_css;
+		}
+
 	# Wikidata form page.
 	} elsif ($self->{'page'} eq 'wikidata_form') {
 		$self->{'_html_wikidata_form'}->process_css;
@@ -283,6 +290,47 @@ sub _prepare_app {
 				'css_background_color' => $count ? 'red' : 'lightgreen',
 				'value' => $count ? $count : decode_utf8('✓'),
 			};
+		},
+		'img_src_cb' => sub {
+			my $image = shift;
+			return $self->{'_link'}->thumb_link($image->commons_name, $IMAGE_GRID_WIDTH);
+		},
+		'img_width' => $IMAGE_GRID_WIDTH,
+	);
+	$self->{'_html_images_vote'} = Tags::HTML::Image::Grid->new(
+		%p,
+		'img_link_cb' => sub {
+			my $image = shift;
+			return '/vote_image/'.$image->id.'?competition_voting_id='
+				.$self->{'data'}->{'competition_voting'}->id;
+		},
+		'img_select_cb' => sub {
+			my ($grid_self, $image) = @_;
+
+			my $voting_type = $self->{'data'}->{'competition_voting'}->voting_type->type;
+			my $person_id;
+			if ($voting_type eq 'jury_voting' || $voting_type eq 'login_voting') {
+				$person_id = $self->{'login_user'}->id;
+			}
+			my $vote = $self->backend->fetch_vote({
+				'competition_voting_id' => $self->{'data'}->{'competition_voting'}->id,
+				'image_id' => $image->id,
+				defined $person_id ? ('person_id' => $person_id) : (),
+			});
+			if (defined $vote && defined $vote->vote_value) {
+				my $vote_value;
+				if ($voting_type eq 'jury_voting') {
+					$vote_value = $vote->vote_value;
+				} else {
+					$vote_value = decode_utf8('✓');
+				}
+				return {
+					'css_background_color' => 'lightgreen',
+					'value' => $vote_value,
+				};
+			} else {
+				return {};
+			}
 		},
 		'img_src_cb' => sub {
 			my $image = shift;
@@ -1443,6 +1491,50 @@ END
 		my $remote_addr = $req->env->{'HTTP_X_REAL_IP'} || $req->env->{'REMOTE_ADDR'};
 		$self->{'_html_vote'}->init($self->{'data'}->{'vote'}, $remote_addr);
 
+	# Voting grid.
+	} elsif ($self->{'page'} eq 'vote_images') {
+		if (defined $self->{'page_id'}) {
+			my $competition_voting_id = $self->{'page_id'};
+			my $count_competition_voting = $self->backend->count_competition_voting_by_now({
+				'competition_voting_id' => $competition_voting_id,
+			});
+			if ($count_competition_voting) {
+				$self->{'data'}->{'competition_voting'}
+					= $self->backend->fetch_competition_voting($competition_voting_id);
+
+				# Get information about competition.
+				my $competition_id = $self->{'data'}->{'competition_voting'}->competition->id;
+				$self->{'data'}->{'competition'} = $self->backend->fetch_competition({
+					'competition_id' => $competition_id,
+				});
+
+				# URL parameters.
+				my $page_num = $req->parameters->{'page_num'} || 1;
+
+				# Count images.
+				$self->{'data'}->{'images_count'}
+					= $self->backend->count_competition_images($competition_id);
+				my $pages = pages_num($self->{'data'}->{'images_count'}, $IMAGES_ON_PAGE);
+				my $actual_page = adjust_actual_page($page_num, $pages);
+				my ($begin_index) = compute_index_values($self->{'data'}->{'images_count'},
+					$actual_page, $IMAGES_ON_PAGE);
+
+				# Fetch selected images.
+				$self->{'data'}->{'images'} = [
+					$self->backend->fetch_competition_images(
+						$competition_id, {
+							'offset' => $begin_index,
+							'rows' => $IMAGES_ON_PAGE,
+						},
+					),
+				];
+
+				# Pager.
+				$self->{'data'}->{'pager'} = {
+					'actual_page' => $actual_page,
+					'pages_num' => $pages,
+				};
+			}
 		}
 
 	# Wikidata form.
@@ -1570,6 +1662,23 @@ sub _tags_middle {
 	# Voting image.
 	} elsif ($self->{'page'} eq 'vote_image') {
 		$self->{'_html_vote'}->process;
+
+	# Voting grid.
+	} elsif ($self->{'page'} eq 'vote_images') {
+		if (exists $self->{'data'}->{'images'}) {
+			$self->{'tags'}->put(
+				['b', 'h1'],
+				['d', $self->{'data'}->{'competition'}->name
+					.' - '.$self->{'data'}->{'competition_voting'}->voting_type->description],
+				['e', 'h1'],
+			);
+			$self->{'_html_images_vote'}->process($self->{'data'}->{'images'});
+			$self->{'_html_pager'}->process($self->{'data'}->{'pager'});
+		} else {
+			$self->{'tags'}->put(
+				['d', 'No images.'],
+			);
+		}
 
 	# Wikidata form page.
 	} elsif ($self->{'page'} eq 'wikidata_form') {
