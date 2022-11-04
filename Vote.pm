@@ -1070,6 +1070,15 @@ sub _process_actions {
 		if ($self->{'page_id'}) {
 			$self->{'data'}->{'image'} = $self->backend->fetch_image($self->{'page_id'});
 
+			my $license;
+			if (defined $self->{'data'}->{'image'}->license_obj
+				&& defined $self->{'data'}->{'image'}->license_obj->text) {
+
+				$license = $self->{'data'}->{'image'}->license_obj->text;
+			} elsif ($self->{'data'}->{'image'}->license) {
+				$license = $self->{'data'}->{'image'}->license
+			}
+
 			push @{$self->{'data'}->{'image_metadata'}}, [
 				'Information',
 				'Value',
@@ -1084,10 +1093,11 @@ sub _process_actions {
 			], [
 				'Comment',
 				$self->{'data'}->{'image'}->comment,
-			], [
+			],
+			defined $license ? ([
 				'License',
 				$self->{'data'}->{'image'}->license_obj->text,
-			], [
+			]) : (), [
 				'Dimensions',
 				$self->{'data'}->{'image'}->width.'x'.$self->{'data'}->{'image'}->height,
 			], [
