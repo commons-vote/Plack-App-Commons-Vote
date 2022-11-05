@@ -953,7 +953,9 @@ sub _process_actions {
 		my $image_id = $req->parameters->{'image_id'};
 		my $count_image = $self->backend->count_image($image_id);
 		if ($count_image && $count_competition_voting) {
-			my $competition_voting = $self->backend->fetch_competition_voting($competition_voting_id);
+			my $competition_voting = $self->backend->fetch_competition_voting({
+				'competition_voting_id' => $competition_voting_id,
+			});
 			my $voting_type = $competition_voting->voting_type->type;
 
 			# Check access.
@@ -1518,8 +1520,11 @@ END
 	# Load competition voting data.
 	} elsif ($self->{'page'} eq 'voting') {
 		if ($self->{'page_id'}) {
+			my $competition_voting_id = $self->{'page_id'};
 			$self->{'data'}->{'voting_type'}
-				= $self->backend->fetch_competition_voting($self->{'page_id'});
+				= $self->backend->fetch_competition_voting({
+					'competition_voting_id' => $competition_voting_id,
+				});
 		}
 
 	# Competition voting form page.
@@ -1527,8 +1532,11 @@ END
 
 		# Update competition voting.
 		if ($self->{'page_id'}) {
+			my $competition_voting_id = $self->{'page_id'};
 			$self->{'data'}->{'competition_voting'}
-				= $self->backend->fetch_competition_voting($self->{'page_id'});
+				= $self->backend->fetch_competition_voting({
+					'competition_voting_id' => $competition_voting_id,
+				});
 			$self->{'data'}->{'voting_types'} = [$self->backend->fetch_voting_types];
 			# TODO Minus other voting types than mine.
 
@@ -1567,7 +1575,9 @@ END
 			});
 			if ($count_image && $count_competition_voting) {
 				$self->{'data'}->{'competition_voting'}
-					= $self->backend->fetch_competition_voting($competition_voting_id);
+					= $self->backend->fetch_competition_voting({
+						'competition_voting_id' => $competition_voting_id,
+					});
 				my $voting_type = $self->{'data'}->{'competition_voting'}->voting_type->type;
 				my $jury_role = $self->backend->fetch_role({'name' => 'jury_member'});
 				my $access = 0;
@@ -1614,7 +1624,9 @@ END
 			});
 			if ($count_competition_voting) {
 				$self->{'data'}->{'competition_voting'}
-					= $self->backend->fetch_competition_voting($competition_voting_id);
+					= $self->backend->fetch_competition_voting({
+						'competition_voting_id' => $competition_voting_id,
+					});
 				my $voting_type = $self->{'data'}->{'competition_voting'}->voting_type->type;
 				my $jury_role = $self->backend->fetch_role({'name' => 'jury_member'});
 				my $access = 0;
