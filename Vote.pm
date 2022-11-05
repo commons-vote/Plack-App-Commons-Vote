@@ -1060,6 +1060,16 @@ sub _process_actions {
 				'join' => 'person_roles',
 			})];
 
+		# All my competition votings for statistics.
+		$self->{'data'}->{'competition_votings_stats'} = {};
+		for my $competition (@{$self->{'data'}->{'competitions'}}) {
+			my @competition_votings = $self->backend->fetch_competition_votings({
+				'competition_id' => $competition->id,
+			});
+			$self->{'data'}->{'competition_votings_stats'}->{$competition->id} ||= [];
+			push @{$self->{'data'}->{'competition_votings_stats'}->{$competition->id}}, @competition_votings;
+		};
+
 		# Competition in which i am member of jury
 		my $jury_role = $self->backend->fetch_role({'name' => 'jury_member'});
 		my @person_roles = $self->backend->fetch_person_roles({
@@ -1840,6 +1850,7 @@ sub _tags_middle {
 	} elsif ($self->{'page'} eq 'main') {
 		$self->{'_html_main'}->process(
 			$self->{'data'}->{'competitions'},
+			$self->{'data'}->{'competition_votings_stats'},
 			$self->{'data'}->{'competition_votings_jury'},
 			$self->{'data'}->{'competition_votings_login'},
 		);
