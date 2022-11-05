@@ -1032,14 +1032,52 @@ sub _process_actions {
 	# Main page.
 	if ($self->{'page'} eq 'main') {
 		$self->{'section'} = $self->{'_html_main'}->{'text'}->{'eng'}->{'my_competitions'};
+
+		# My competitions.
+		my $competition_role = $self->backend->fetch_role({'name' => 'competition_admin'});
 		$self->{'data'}->{'competitions'}
 			= [$self->backend->fetch_competitions({
 				'person_roles.person_id' => $self->{'login_user'}->id,
+				'person_roles.role_id' => $competition_role->id,
 			}, {
 				'join' => 'person_roles',
 			})];
-		# TODO Jury voting
-		# TODO Public voting
+
+		# Competition in which i am member of jury
+		my $jury_role = $self->backend->fetch_role({'name' => 'jury_member'});
+		my @person_roles = $self->backend->fetch_person_roles({
+			'person_id' => $self->{'login_user'}->id,
+			'role_id' => $jury_role->id,
+		});
+		$self->{'data'}->{'competition_votings_jury'} = [];
+		my $dtf = $self->backend->schema->storage->datetime_parser;
+		my $jury_voting_type = $self->backend->fetch_voting_type({'type' => 'jury_voting'});
+		foreach my $person_role (@person_roles) {
+			my $competition_voting = $self->backend->fetch_competition_voting({
+				'me.competition_id' => $person_role->competition->id,
+				'date_from' => {'<=' => $dtf->format_datetime(DateTime->now)},
+				'date_to' => {'>' => $dtf->format_datetime(DateTime->now)},
+				'competition.images_loaded_at' => {'!=' => undef},
+				'voting_type_id' => $jury_voting_type->id,
+			}, {
+				'join' => 'competition',
+			});
+			if (defined $competition_voting) {
+				push @{$self->{'data'}->{'competition_votings_jury'}}, $competition_voting;
+			}
+		}
+
+		# Other competitions.
+		my $login_voting_type = $self->backend->fetch_voting_type({'type' => 'login_voting'});
+		$self->{'data'}->{'competition_votings_login'}
+			= [$self->backend->fetch_competition_votings({
+				'date_from' => {'<=' => $dtf->format_datetime(DateTime->now)},
+				'date_to' => {'>' => $dtf->format_datetime(DateTime->now)},
+				'competition.images_loaded_at' => {'!=' => undef},
+				'voting_type_id' => $login_voting_type->id,
+			}, {
+				'join' => 'competition',
+			})];
 
 	# Load competition data.
 	} elsif ($self->{'page'} eq 'competition') {
@@ -1777,7 +1815,11 @@ sub _tags_middle {
 
 	# Main page.
 	} elsif ($self->{'page'} eq 'main') {
-		$self->{'_html_main'}->process($self->{'data'}->{'competitions'});
+		$self->{'_html_main'}->process(
+			$self->{'data'}->{'competitions'},
+			$self->{'data'}->{'competition_votings_jury'},
+			$self->{'data'}->{'competition_votings_login'},
+		);
 
 	# List of newcomers.
 	} elsif ($self->{'page'} eq 'newcomers') {
