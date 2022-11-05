@@ -959,73 +959,89 @@ sub _process_actions {
 			my $competition_voting = $self->backend->fetch_competition_voting({
 				'competition_voting_id' => $competition_voting_id,
 			});
-			my $voting_type = $competition_voting->voting_type->type;
+			my $next_image = $req->parameters->{'next_image'};
 
-			# Check access.
-			my $access = 0;
-			if ($voting_type eq 'jury_voting') {
-				my $jury_role = $self->backend->fetch_role({'name' => 'jury_member'});
-				if ($self->_check_access({
-						'competition_id' => $competition_voting->competition->id,
-						'role_id' => $jury_role->id,
-					})) {
-
-					$access = 1;
-				}
-			} else {
-				$access = 1;
-			}
-			if ($access) {
-
-				my $person;
-				if ($voting_type eq 'jury_voting' || $voting_type eq 'login_voting') {
-					$person = $self->{'login_user'};
-				}
-
-				# Check voting.
-				my $count_vote = $self->backend->count_vote({
-					'competition_voting_id' => $competition_voting_id,
-					'image_id' => $image_id,
-					defined $person ? ('person_id' => $person->id) : (),
-				});
-
-				# Vote exists.
-				my $vote_value = $req->parameters->{'vote_value'};
-				if ($count_vote
-					# Update voting 0 .. X.
-					&& ($voting_type eq 'jury_voting' || $voting_type eq 'login_voting')) {
-
-					$self->backend->delete_vote({
-						'competition_voting_id' => $competition_voting_id,
-						'image_id' => $image_id,
-						'person_id' => $person->id,
-					});
-				}
-
-				# Save new anonymous vote.
-				if (($voting_type eq 'anonymous_voting' && ! $count_vote)
-					# Save yes/no voting.
-					|| (($voting_type eq 'jury_voting' || $voting_type eq 'login_voting')
-					&& $vote_value ne '')) {
-
-					my $image = $self->backend->fetch_image($image_id);
-					$self->backend->save_vote(Data::Commons::Vote::Vote->new(
-						'competition_voting' => $competition_voting,
-						'image' => $image,
-						defined $person ? ('person' => $person) : (),
-						'vote_value' => $vote_value,
-					));
-				}
-			}
-
-			if ($competition_voting->id) {
-				$self->{'page'} = 'vote_images';
-				$self->{'page_id'} = $competition_voting->id;
+			# Move to next image.
+			my $next_image_id = $req->parameters->{'next_image_id'};
+			if ($next_image eq 'Next image') {
 
 				# Redirect.
-				$self->_redirect('/vote_images/'.$competition_voting->id);
+				$self->_redirect('/vote_image/'.$next_image_id.'?competition_voting_id='.$competition_voting->id);
+
+			# Save vote.
 			} else {
-				$self->{'page'} = 'vote_image';
+				my $voting_type = $competition_voting->voting_type->type;
+
+				# Check access.
+				my $access = 0;
+				if ($voting_type eq 'jury_voting') {
+					my $jury_role = $self->backend->fetch_role({'name' => 'jury_member'});
+					if ($self->_check_access({
+							'competition_id' => $competition_voting->competition->id,
+							'role_id' => $jury_role->id,
+						})) {
+
+						$access = 1;
+					}
+				} else {
+					$access = 1;
+				}
+				if ($access) {
+
+					my $person;
+					if ($voting_type eq 'jury_voting' || $voting_type eq 'login_voting') {
+						$person = $self->{'login_user'};
+					}
+
+					# Check voting.
+					my $count_vote = $self->backend->count_vote({
+						'competition_voting_id' => $competition_voting_id,
+						'image_id' => $image_id,
+						defined $person ? ('person_id' => $person->id) : (),
+					});
+
+					# Vote exists.
+					my $vote_value = $req->parameters->{'vote_value'};
+					if ($count_vote
+						# Update voting 0 .. X.
+						&& ($voting_type eq 'jury_voting' || $voting_type eq 'login_voting')) {
+
+						$self->backend->delete_vote({
+							'competition_voting_id' => $competition_voting_id,
+							'image_id' => $image_id,
+							'person_id' => $person->id,
+						});
+					}
+
+					# Save new anonymous vote.
+					if (($voting_type eq 'anonymous_voting' && ! $count_vote)
+						# Save yes/no voting.
+						|| (($voting_type eq 'jury_voting' || $voting_type eq 'login_voting')
+						&& $vote_value ne '')) {
+
+						my $image = $self->backend->fetch_image($image_id);
+						$self->backend->save_vote(Data::Commons::Vote::Vote->new(
+							'competition_voting' => $competition_voting,
+							'image' => $image,
+							defined $person ? ('person' => $person) : (),
+							'vote_value' => $vote_value,
+						));
+					}
+				}
+
+				if ($competition_voting->id) {
+					$self->{'page'} = 'vote_images';
+					$self->{'page_id'} = $competition_voting->id;
+
+					# Redirect.
+					if (defined $next_image_id) {
+						$self->_redirect('/vote_image/'.$next_image_id.'?competition_voting_id='.$competition_voting->id);
+					} else {
+						$self->_redirect('/vote_images/'.$competition_voting->id);
+					}
+				} else {
+					$self->{'page'} = 'vote_image';
+				}
 			}
 		}
 	}
@@ -1648,11 +1664,17 @@ END
 							'person' => $person,
 						);
 					}
+
+					# Next image id.
+					my $next_image = $self->backend->fetch_image_next($image_id);
+					if (defined $next_image) {
+						$self->{'data'}->{'next_image_id'} = $next_image->id;
+					}
 				}
 			}
 		}
 		my $remote_addr = $req->env->{'HTTP_X_REAL_IP'} || $req->env->{'REMOTE_ADDR'};
-		$self->{'_html_vote'}->init($self->{'data'}->{'vote'}, $remote_addr);
+		$self->{'_html_vote'}->init($self->{'data'}->{'vote'}, $remote_addr, $self->{'data'}->{'next_image_id'});
 
 	# Voting grid.
 	} elsif ($self->{'page'} eq 'vote_images') {
