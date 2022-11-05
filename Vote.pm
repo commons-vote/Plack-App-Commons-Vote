@@ -324,7 +324,9 @@ sub _prepare_app {
 			});
 			if (defined $vote && defined $vote->vote_value) {
 				my $vote_value;
-				if ($voting_type eq 'jury_voting') {
+				if (($voting_type eq 'jury_voting' || $voting_type eq 'login_voting')
+					&& defined $self->{'data'}->{'competition_voting'}->number_of_votes) {
+
 					$vote_value = $vote->vote_value;
 				} else {
 					$vote_value = decode_utf8('✓');
@@ -990,10 +992,8 @@ sub _process_actions {
 				# Vote exists.
 				my $vote_value = $req->parameters->{'vote_value'};
 				if ($count_vote
-					# Update jury voting.
-					&& ($voting_type eq 'jury_voting'
-					# Unvote.
-					|| ($voting_type eq 'login_voting' && $vote_value eq ''))) {
+					# Update voting 0 .. X.
+					&& ($voting_type eq 'jury_voting' || $voting_type eq 'login_voting')) {
 
 					$self->backend->delete_vote({
 						'competition_voting_id' => $competition_voting_id,
@@ -1001,12 +1001,12 @@ sub _process_actions {
 						'person_id' => $person->id,
 					});
 				}
+
 				# Save new anonymous vote.
 				if (($voting_type eq 'anonymous_voting' && ! $count_vote)
-					# Save jury vote.
-					|| $voting_type eq 'jury_voting'
-					# Save login vote.
-					|| ($voting_type eq 'login_voting' && $vote_value ne '')) {
+					# Save yes/no voting.
+					|| (($voting_type eq 'jury_voting' || $voting_type eq 'login_voting')
+					&& $vote_value ne '')) {
 
 					my $image = $self->backend->fetch_image($image_id);
 					$self->backend->save_vote(Data::Commons::Vote::Vote->new(
