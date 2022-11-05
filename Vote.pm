@@ -680,6 +680,7 @@ sub _process_actions {
 
 		# Remove loaded_at from competition
 		$self->backend->schema->resultset('Competition')->update({
+			'competition_id' => $competition->id,
 			'images_loaded_at' => undef,
 		});
 		foreach my $section (@{$competition->sections}) {
