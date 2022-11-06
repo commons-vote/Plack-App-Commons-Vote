@@ -1788,13 +1788,21 @@ END
 						'Wikimedia username',
 						'Count of votes',
 						'Sum of votes',
+						'Average',
 					];
-					foreach my $vote_stat ($self->backend->fetch_vote_counted($competition_voting_id)) {
+					foreach my $vote_stat (sort {
+							sprintf("%.2f", ($b->vote_sum / $b->vote_count))
+							<=>
+							sprintf("%.2f", ($a->vote_sum / $a->vote_count))
+						}
+						$self->backend->fetch_vote_counted($competition_voting_id)) {
+
 						push @{$self->{'data'}->{'vote_stats'}}, [
 							$vote_stat->image->commons_name,
 							$vote_stat->image->uploader->wm_username,
 							$vote_stat->vote_count,
 							$vote_stat->vote_sum,
+							sprintf("%.2f", ($vote_stat->vote_sum / $vote_stat->vote_count)),
 						];
 					}
 				} else {
