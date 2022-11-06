@@ -1109,15 +1109,16 @@ sub _process_actions {
 	# Load competition data.
 	} elsif ($self->{'page'} eq 'competition') {
 		if ($self->{'page_id'}) {
+			my $competition_id = $self->{'page_id'};
 			my $competition_role = $self->backend->fetch_role({'name' => 'competition_admin'});
 			if ($self->_check_access({
-					'competition_id' => $self->{'page_id'},
+					'competition_id' => $competition_id,
 					'role_id' => $competition_role->id,
 				})) {
 
 				$self->{'data'}->{'competition'}
 					= $self->backend->fetch_competition({
-						'competition_id' => $self->{'page_id'},
+						'competition_id' => $competition_id,
 					}, {}, {
 						'person_roles' => 1,
 						'sections' => 1,
