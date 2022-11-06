@@ -1459,8 +1459,9 @@ sub _process_actions {
 	# Load section form data.
 	} elsif ($self->{'page'} eq 'section_form') {
 		if ($self->{'page_id'}) {
+			my $section_id = $self->{'page_id'};
 			$self->{'data'}->{'section_form'}
-				= $self->backend->fetch_section($self->{'page_id'});
+				= $self->backend->fetch_section($section_id);
 		} else {
 			my $competition_id = $req->parameters->{'competition_id'};
 			if ($competition_id) {
