@@ -1756,6 +1756,10 @@ END
 				'competition_voting_id' => $competition_voting_id,
 			});
 			if ($count_competition_voting) {
+				$self->{'data'}->{'competition_voting'}
+					= $self->backend->fetch_competition_voting({
+						'competition_voting_id' => $competition_voting_id,
+					});
 				$self->{'data'}->{'vote_stats'} = [];
 				push @{$self->{'data'}->{'vote_stats'}}, [
 					'Image',
@@ -1922,6 +1926,12 @@ sub _tags_middle {
 
 	# Voting stats,
 	} elsif ($self->{'page'} eq 'vote_stats') {
+		$self->{'tags'}->put(
+			['b', 'h1'],
+			['d', $self->{'data'}->{'competition_voting'}->competition->name
+				.' - '.$self->{'data'}->{'competition_voting'}->voting_type->description],
+			['e', 'h1'],
+		);
 		$self->{'_html_table_view'}->process($self->{'data'}->{'vote_stats'});
 
 	# Wikidata form page.
