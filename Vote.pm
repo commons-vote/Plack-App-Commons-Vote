@@ -1760,17 +1760,20 @@ END
 					= $self->backend->fetch_competition_voting({
 						'competition_voting_id' => $competition_voting_id,
 					});
+
 				$self->{'data'}->{'vote_stats'} = [];
 				push @{$self->{'data'}->{'vote_stats'}}, [
 					'Image',
 					'Wikimedia username',
 					'Count of votes',
+					'Sum of votes',
 				];
 				foreach my $vote_stat ($self->backend->fetch_vote_counted($competition_voting_id)) {
 					push @{$self->{'data'}->{'vote_stats'}}, [
 						$vote_stat->image->commons_name,
 						$vote_stat->image->uploader->wm_username,
 						$vote_stat->vote_count,
+						$vote_stat->vote_sum,
 					];
 				}
 			}
