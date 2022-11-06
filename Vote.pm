@@ -1753,29 +1753,38 @@ END
 	} elsif ($self->{'page'} eq 'vote_stats') {
 		if (defined $self->{'page_id'}) {
 			my $competition_voting_id = $self->{'page_id'};
+
 			my $count_competition_voting = $self->backend->count_competition_voting({
 				'competition_voting_id' => $competition_voting_id,
 			});
 			if ($count_competition_voting) {
-				$self->{'data'}->{'competition_voting'}
-					= $self->backend->fetch_competition_voting({
+				my $competition_voting = $self->backend->fetch_competition_voting({
 						'competition_voting_id' => $competition_voting_id,
 					});
+				$self->{'data'}->{'competition_voting'} = $competition_voting;
+				my $competition_role = $self->backend->fetch_role({'name' => 'competition_admin'});
+				if ($self->_check_access({
+						'competition_id' => $competition_voting->competition->id,
+						'role_id' => $competition_role->id,
+					})) {
 
-				$self->{'data'}->{'vote_stats'} = [];
-				push @{$self->{'data'}->{'vote_stats'}}, [
-					'Image',
-					'Wikimedia username',
-					'Count of votes',
-					'Sum of votes',
-				];
-				foreach my $vote_stat ($self->backend->fetch_vote_counted($competition_voting_id)) {
+					$self->{'data'}->{'vote_stats'} = [];
 					push @{$self->{'data'}->{'vote_stats'}}, [
-						$vote_stat->image->commons_name,
-						$vote_stat->image->uploader->wm_username,
-						$vote_stat->vote_count,
-						$vote_stat->vote_sum,
+						'Image',
+						'Wikimedia username',
+						'Count of votes',
+						'Sum of votes',
 					];
+					foreach my $vote_stat ($self->backend->fetch_vote_counted($competition_voting_id)) {
+						push @{$self->{'data'}->{'vote_stats'}}, [
+							$vote_stat->image->commons_name,
+							$vote_stat->image->uploader->wm_username,
+							$vote_stat->vote_count,
+							$vote_stat->vote_sum,
+						];
+					}
+				} else {
+					$self->{'data'}->{'no_access'} = 1;
 				}
 			}
 		}
@@ -1930,13 +1939,19 @@ sub _tags_middle {
 
 	# Voting stats,
 	} elsif ($self->{'page'} eq 'vote_stats') {
-		$self->{'tags'}->put(
-			['b', 'h1'],
-			['d', $self->{'data'}->{'competition_voting'}->competition->name
-				.' - '.$self->{'data'}->{'competition_voting'}->voting_type->description],
-			['e', 'h1'],
-		);
-		$self->{'_html_table_view'}->process($self->{'data'}->{'vote_stats'});
+		if ($self->{'data'}->{'no_access'}) {
+			$self->{'tags'}->put(
+				['d', "Competition doesn't exist."],
+			);
+		} else {
+			$self->{'tags'}->put(
+				['b', 'h1'],
+				['d', $self->{'data'}->{'competition_voting'}->competition->name
+					.' - '.$self->{'data'}->{'competition_voting'}->voting_type->description],
+				['e', 'h1'],
+			);
+			$self->{'_html_table_view'}->process($self->{'data'}->{'vote_stats'});
+		}
 
 	# Wikidata form page.
 	} elsif ($self->{'page'} eq 'wikidata_form') {
