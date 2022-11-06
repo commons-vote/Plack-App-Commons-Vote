@@ -64,6 +64,7 @@ our $VERSION = 0.01;
 sub _cleanup {
 	my $self = shift;
 
+	$self->{'_html_menu'}->cleanup;
 	if ($self->{'page'} eq 'competition_form') {
 		$self->{'_html_competition_form'}->cleanup;
 	} elsif ($self->{'page'} eq 'role_form') {
@@ -1061,7 +1062,7 @@ sub _process_actions {
 
 	# Main page.
 	if ($self->{'page'} eq 'main') {
-		$self->{'section'} = $self->{'_html_main'}->{'text'}->{'eng'}->{'my_competitions'};
+		$self->{'data'}->{'menu_title'} = $self->{'_html_main'}->{'text'}->{'eng'}->{'my_competitions'};
 
 		# My competitions.
 		my $competition_role = $self->backend->fetch_role({'name' => 'competition_admin'});
@@ -1844,16 +1845,20 @@ END
 		$self->{'content'} = p $req;
 	}
 
+	# Menu.
+	$self->{'_html_menu'}->init({
+		'login_name' => $self->{'login_user'}->name || $self->{'login_user'}->wm_username,
+		'title' => $self->{'data'}->{'menu_title'},
+	});
+
 	return;
 }
 
 sub _tags_middle {
 	my $self = shift;
 
-	$self->{'_html_menu'}->process({
-		'login_name' => $self->{'login_user'}->name || $self->{'login_user'}->wm_username,
-		'section' => $self->{'section'},
-	});
+	# Menu.
+	$self->{'_html_menu'}->process;
 
 	# Register page.
 	if ($self->{'page'} eq 'register') {
