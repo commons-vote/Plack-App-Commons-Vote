@@ -1996,7 +1996,7 @@ sub _tags_middle {
 					.' - '.$self->{'data'}->{'competition_voting'}->voting_type->description],
 				['e', 'h1'],
 			);
-			$self->{'_html_table_view'}->process($self->{'data'}->{'vote_stats'});
+			$self->{'_html_table_view'}->process($self->{'data'}->{'vote_stats'}, 'No stats.');
 		}
 
 	# Wikidata form page.
