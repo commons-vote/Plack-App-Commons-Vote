@@ -1953,7 +1953,7 @@ sub _tags_middle {
 
 	# Voting stats,
 	} elsif ($self->{'page'} eq 'vote_stats') {
-		if ($self->{'data'}->{'no_access'}) {
+		if ($self->{'data'}->{'no_access'} || ! defined $self->{'data'}->{'competition_voting'}) {
 			$self->{'tags'}->put(
 				['d', "Competition doesn't exist."],
 			);
