@@ -64,8 +64,20 @@ our $VERSION = 0.01;
 sub _cleanup {
 	my $self = shift;
 
-	if ($self->{'page'} eq 'vote_image') {
+	if ($self->{'page'} eq 'competition_form') {
+		$self->{'_html_competition_form'}->cleanup;
+	} elsif ($self->{'page'} eq 'role_form') {
+		$self->{'_html_person_role_form'}->cleanup;
+	} elsif ($self->{'page'} eq 'section_form') {
+		$self->{'_html_section_form'}->cleanup;
+	} elsif ($self->{'page'} eq 'theme_form') {
+		$self->{'_html_theme_form'}->cleanup;
+	} elsif ($self->{'page'} eq 'validation_form') {
+		$self->{'_html_competition_validation_form'}->cleanup;
+	} elsif ($self->{'page'} eq 'vote_image') {
 		$self->{'_html_vote'}->cleanup;
+	} elsif ($self->{'page'} eq 'voting_form') {
+		$self->{'_html_competition_voting_form'}->cleanup;
 	}
 
 	return;
