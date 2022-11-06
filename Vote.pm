@@ -685,6 +685,7 @@ sub _process_actions {
 		my $section;
 		if ($section_id) {
 			$section = $self->backend->update_section(
+				$section_id,
 				$section_to_update,
 			);
 		} else {
