@@ -1801,8 +1801,18 @@ END
 							$self->backend->fetch_vote_counted($competition_voting_id)) {
 
 							push @{$self->{'data'}->{'vote_stats'}}, [
-								$vote_stat->image->commons_name,
-								$vote_stat->image->uploader->wm_username,
+								[
+									['b', 'a'],
+									['a', 'href', $self->{'_link'}->mw_file_link($vote_stat->image->commons_name)],
+									['d', $vote_stat->image->commons_name],
+									['e', 'a'],
+								],
+								[
+									['b', 'a'],
+									['a', 'href', $self->{'_link'}->mw_user_link($vote_stat->image->uploader->wm_username)],
+									['d', $vote_stat->image->uploader->wm_username],
+									['e', 'a'],
+								],
 								$vote_stat->vote_count,
 							];
 						}
