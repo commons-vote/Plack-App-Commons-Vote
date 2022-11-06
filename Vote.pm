@@ -1781,29 +1781,53 @@ END
 						'competition_id' => $competition_voting->competition->id,
 						'role_id' => $competition_role->id,
 					})) {
+					my $voting_type = $competition_voting->voting_type;
 
 					$self->{'data'}->{'vote_stats'} = [];
 					push @{$self->{'data'}->{'vote_stats'}}, [
 						'Image',
 						'Wikimedia username',
 						'Count of votes',
-						'Sum of votes',
-						'Average',
 					];
-					foreach my $vote_stat (sort {
-							sprintf("%.2f", ($b->vote_sum / $b->vote_count))
-							<=>
-							sprintf("%.2f", ($a->vote_sum / $a->vote_count))
-						}
-						$self->backend->fetch_vote_counted($competition_voting_id)) {
 
-						push @{$self->{'data'}->{'vote_stats'}}, [
-							$vote_stat->image->commons_name,
-							$vote_stat->image->uploader->wm_username,
-							$vote_stat->vote_count,
-							$vote_stat->vote_sum,
-							sprintf("%.2f", ($vote_stat->vote_sum / $vote_stat->vote_count)),
-						];
+					# yes/no voting.
+					if ($voting_type->type eq 'anonymous_voting'
+						|| ! defined $competition_voting->number_of_votes) {
+
+						foreach my $vote_stat (sort {
+								$b->vote_count <=> $a->vote_count
+							}
+							$self->backend->fetch_vote_counted($competition_voting_id)) {
+
+							push @{$self->{'data'}->{'vote_stats'}}, [
+								$vote_stat->image->commons_name,
+								$vote_stat->image->uploader->wm_username,
+								$vote_stat->vote_count,
+							];
+						}
+
+					# 0 .. X voting.
+					} else {
+						push @{$self->{'data'}->{'vote_stats'}->[0]}, (
+							'Sum of votes',
+							'Average',
+						);
+
+						foreach my $vote_stat (sort {
+								sprintf("%.2f", ($b->vote_sum / $b->vote_count))
+								<=>
+								sprintf("%.2f", ($a->vote_sum / $a->vote_count))
+							}
+							$self->backend->fetch_vote_counted_sum($competition_voting_id)) {
+
+							push @{$self->{'data'}->{'vote_stats'}}, [
+								$vote_stat->image->commons_name,
+								$vote_stat->image->uploader->wm_username,
+								$vote_stat->vote_count,
+								$vote_stat->vote_sum,
+								sprintf("%.2f", ($vote_stat->vote_sum / $vote_stat->vote_count)),
+							];
+						}
 					}
 				} else {
 					$self->{'data'}->{'no_access'} = 1;
