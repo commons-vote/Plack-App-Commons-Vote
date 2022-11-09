@@ -1257,6 +1257,7 @@ sub _process_actions {
 					['e', 'a'],
 				],
 			];
+			$self->{'_html_table_view'}->init($self->{'data'}->{'image_metadata'}, 'No image metadata.');
 		}
 
 	# View images.
@@ -1381,6 +1382,7 @@ sub _process_actions {
 					\@validations,
 				];
 			}
+			$self->{'_html_table_view'}->init($self->{'data'}->{'validation_report'}, 'No validation report data.');
 		}
 
 	# Log list.
@@ -1402,6 +1404,7 @@ sub _process_actions {
 					),
 				],
 			} @logs;
+			$self->{'_html_table_view'}->init($self->{'data'}->{'logs'}, 'No logs.');
 		}
 
 	# List newcomers
@@ -1851,6 +1854,7 @@ END
 							];
 						}
 					}
+					$self->{'_html_table_view'}->init($self->{'data'}->{'vote_stats'}, 'No stats.');
 				} else {
 					$self->{'data'}->{'no_access'} = 1;
 				}
@@ -1914,7 +1918,7 @@ sub _tags_middle {
 	# View image.
 	} elsif ($self->{'page'} eq 'image') {
 		$self->{'_html_image'}->process($self->{'data'}->{'image'});
-		$self->{'_html_table_view'}->process($self->{'data'}->{'image_metadata'});
+		$self->{'_html_table_view'}->process;
 
 	# View images.
 	} elsif ($self->{'page'} eq 'images') {
@@ -1933,7 +1937,7 @@ sub _tags_middle {
 
 	# Log list.
 	} elsif ($self->{'page'} eq 'logs') {
-		$self->{'_html_table_view'}->process($self->{'data'}->{'logs'});
+		$self->{'_html_table_view'}->process;
 
 	# Main page.
 	} elsif ($self->{'page'} eq 'main') {
@@ -1978,7 +1982,7 @@ sub _tags_middle {
 
 	# Validation report.
 	} elsif ($self->{'page'} eq 'validation_report') {
-		$self->{'_html_table_view'}->process($self->{'data'}->{'validation_report'});
+		$self->{'_html_table_view'}->process;
 
 	# Voting type page.
 	} elsif ($self->{'page'} eq 'voting') {
@@ -2022,7 +2026,7 @@ sub _tags_middle {
 					.' - '.$self->{'data'}->{'competition_voting'}->voting_type->description],
 				['e', 'h1'],
 			);
-			$self->{'_html_table_view'}->process($self->{'data'}->{'vote_stats'}, 'No stats.');
+			$self->{'_html_table_view'}->process;
 		}
 
 	# Wikidata form page.

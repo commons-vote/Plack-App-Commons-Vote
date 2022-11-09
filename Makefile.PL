@@ -49,6 +49,7 @@ requires 'Tags::HTML::Image::Grid' => 0;
 requires 'Tags::HTML::Login::Register' => 0;
 requires 'Tags::HTML::Pager' => 0.04;
 requires 'Tags::HTML::Pager::Utils' => 0.04;
+requires 'Tags::HTML::Table::View' => 0;
 requires 'Unicode::UTF8' => 0;
 resources 'bugtracker' => 'https://github.com/michal-josef-spacek/Plack-App-Commons-Vote/issues';
 resources 'homepage' => 'https://github.com/michal-josef-spacek/Plack-App-Commons-Vote';

@@ -58,6 +58,7 @@ requires:
   Tags::HTML::Login::Register: 0
   Tags::HTML::Pager: 0.04
   Tags::HTML::Pager::Utils: 0.04
+  Tags::HTML::Table::View: 0
   Unicode::UTF8: 0
   perl: 5.8.0
 resources:
