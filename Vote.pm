@@ -981,7 +981,7 @@ sub _process_actions {
 
 			# Move to next image.
 			my $next_image_id = $req->parameters->{'next_image_id'};
-			if ($next_image eq 'Next image') {
+			if (defined $next_image && $next_image eq 'Next image') {
 
 				# Redirect.
 				$self->_redirect('/vote_image/'.$next_image_id.'?competition_voting_id='.$competition_voting->id);
@@ -1052,7 +1052,7 @@ sub _process_actions {
 					$self->{'page_id'} = $competition_voting->id;
 
 					# Redirect.
-					if (defined $next_image_id) {
+					if (defined $next_image_id && $next_image_id ne '') {
 						$self->_redirect('/vote_image/'.$next_image_id.'?competition_voting_id='.$competition_voting->id);
 					} else {
 						$self->_redirect('/vote_images/'.$competition_voting->id);
