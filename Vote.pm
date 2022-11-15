@@ -68,6 +68,7 @@ sub _cleanup {
 	if ($self->{'page'} eq 'competition_form') {
 		$self->{'_html_competition_form'}->cleanup;
 	} elsif ($self->{'page'} eq 'image') {
+		$self->{'_html_image'}->cleanup;
 		$self->{'_html_table_view'}->cleanup;
 	} elsif ($self->{'page'} eq 'logs') {
 		$self->{'_html_table_view'}->cleanup;
