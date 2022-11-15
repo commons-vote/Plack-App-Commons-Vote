@@ -402,6 +402,7 @@ sub _prepare_app {
 			'form_link' => '/theme_save',
 		);
 	$self->{'_html_vote'} = Tags::HTML::Commons::Vote::Vote->new(%p,
+		'fit_minus' => '110px',
 		'form_link' => '/vote_save',
 		'img_src_cb' => sub {
 			my $image = shift;
