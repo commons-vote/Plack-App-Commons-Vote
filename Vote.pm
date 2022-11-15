@@ -1700,7 +1700,8 @@ END
 					}
 
 					# Next image id.
-					my $next_image = $self->backend->fetch_image_next($image_id);
+					my $next_image = $self->backend->fetch_competition_image_next(
+						$competition_voting->competition->id, $image_id);
 					if (defined $next_image) {
 						$self->{'data'}->{'next_image_id'} = $next_image->id;
 					}
