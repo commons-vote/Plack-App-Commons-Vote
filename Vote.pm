@@ -1267,6 +1267,7 @@ sub _process_actions {
 					['e', 'a'],
 				],
 			];
+			$self->{'_html_image'}->init($self->{'data'}->{'image'});
 			$self->{'_html_table_view'}->init($self->{'data'}->{'image_metadata'}, 'No image metadata.');
 		}
 
@@ -1929,7 +1930,7 @@ sub _tags_middle {
 
 	# View image.
 	} elsif ($self->{'page'} eq 'image') {
-		$self->{'_html_image'}->process($self->{'data'}->{'image'});
+		$self->{'_html_image'}->process;
 		$self->{'_html_table_view'}->process;
 
 	# View images.
