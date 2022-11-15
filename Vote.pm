@@ -77,6 +77,8 @@ sub _cleanup {
 		$self->{'_html_competition_validation_form'}->cleanup;
 	} elsif ($self->{'page'} eq 'vote_image') {
 		$self->{'_html_vote'}->cleanup;
+	} elsif ($self->{'page'} eq 'vote_stats') {
+		$self->{'_html_table_view'}->cleanup;
 	} elsif ($self->{'page'} eq 'voting_form') {
 		$self->{'_html_competition_voting_form'}->cleanup;
 	}
