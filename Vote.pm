@@ -1662,10 +1662,11 @@ END
 				'competition_voting_id' => $competition_voting_id,
 			});
 			if ($count_image && $count_competition_voting) {
-				$self->{'data'}->{'competition_voting'}
+				my $competition_voting
 					= $self->backend->fetch_competition_voting({
 						'competition_voting_id' => $competition_voting_id,
 					});
+				$self->{'data'}->{'competition_voting'} = $competition_voting;
 				my $voting_type = $self->{'data'}->{'competition_voting'}->voting_type->type;
 				my $jury_role = $self->backend->fetch_role({'name' => 'jury_member'});
 				my $access = 0;
