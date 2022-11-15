@@ -67,6 +67,10 @@ sub _cleanup {
 	$self->{'_html_menu'}->cleanup;
 	if ($self->{'page'} eq 'competition_form') {
 		$self->{'_html_competition_form'}->cleanup;
+	} elsif ($self->{'page'} eq 'image') {
+		$self->{'_html_table_view'}->cleanup;
+	} elsif ($self->{'page'} eq 'logs') {
+		$self->{'_html_table_view'}->cleanup;
 	} elsif ($self->{'page'} eq 'role_form') {
 		$self->{'_html_person_role_form'}->cleanup;
 	} elsif ($self->{'page'} eq 'section_form') {
@@ -75,6 +79,8 @@ sub _cleanup {
 		$self->{'_html_theme_form'}->cleanup;
 	} elsif ($self->{'page'} eq 'validation_form') {
 		$self->{'_html_competition_validation_form'}->cleanup;
+	} elsif ($self->{'page'} eq 'validation_report') {
+		$self->{'_html_table_view'}->cleanup;
 	} elsif ($self->{'page'} eq 'vote_image') {
 		$self->{'_html_vote'}->cleanup;
 	} elsif ($self->{'page'} eq 'vote_stats') {
