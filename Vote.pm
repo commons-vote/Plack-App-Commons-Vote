@@ -1663,17 +1663,18 @@ END
 	# Voting image.
 	} elsif ($self->{'page'} eq 'vote_image') {
 		if ($self->{'page_id'}) {
-			my $image_id = $self->{'page_id'};
-			my $count_image = $self->backend->count_image($image_id);
 			my $competition_voting_id = $req->parameters->{'competition_voting_id'};
 			my $count_competition_voting = $self->backend->count_competition_voting_by_now({
 				'competition_voting_id' => $competition_voting_id,
 			});
+			my $competition_voting
+				= $self->backend->fetch_competition_voting({
+					'competition_voting_id' => $competition_voting_id,
+				});
+			my $image_id = $self->{'page_id'};
+			my $count_image = $self->backend->count_competition_image_valid(
+				$competition_voting->competition->id, $image_id);
 			if ($count_image && $count_competition_voting) {
-				my $competition_voting
-					= $self->backend->fetch_competition_voting({
-						'competition_voting_id' => $competition_voting_id,
-					});
 				$self->{'data'}->{'competition_voting'} = $competition_voting;
 				my $voting_type = $self->{'data'}->{'competition_voting'}->voting_type->type;
 				my $jury_role = $self->backend->fetch_role({'name' => 'jury_member'});
