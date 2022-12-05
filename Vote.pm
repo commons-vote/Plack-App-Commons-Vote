@@ -978,12 +978,13 @@ sub _process_actions {
 		my $count_competition_voting = $self->backend->count_competition_voting_by_now({
 			'competition_voting_id' => $competition_voting_id,
 		});
+		my $competition_voting = $self->backend->fetch_competition_voting({
+			'competition_voting_id' => $competition_voting_id,
+		});
 		my $image_id = $req->parameters->{'image_id'};
-		my $count_image = $self->backend->count_image($image_id);
+		my $count_image = $self->backend->count_competition_image_valid(
+			$competition_voting->competition->id, $image_id);
 		if ($count_image && $count_competition_voting) {
-			my $competition_voting = $self->backend->fetch_competition_voting({
-				'competition_voting_id' => $competition_voting_id,
-			});
 			my $next_image = $req->parameters->{'next_image'};
 
 			# Move to next image.
