@@ -326,6 +326,18 @@ sub _prepare_app {
 	);
 	$self->{'_html_images_vote'} = Tags::HTML::Image::Grid->new(
 		%p,
+		'img_border_width' => 5,
+		'img_border_color_cb' => sub {
+			my ($grid_self, $image) = @_;
+			my $count = $self->backend->count_vote({
+				'competition_voting_id' => $self->{'data'}->{'competition_voting'}->id,
+				'image_id' => $image->id,
+			});
+			if (! $count) {
+				return 'red';
+			}
+			return;
+		},
 		'img_link_cb' => sub {
 			my $image = shift;
 			return '/vote_image/'.$image->id.'?competition_voting_id='
