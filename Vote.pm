@@ -329,9 +329,15 @@ sub _prepare_app {
 		'img_border_width' => 5,
 		'img_border_color_cb' => sub {
 			my ($grid_self, $image) = @_;
+			my $voting_type = $self->{'data'}->{'competition_voting'}->voting_type->type;
+			my $person_id;
+			if ($voting_type eq 'jury_voting' || $voting_type eq 'login_voting') {
+				$person_id = $self->{'login_user'}->id;
+			}
 			my $count = $self->backend->count_vote({
 				'competition_voting_id' => $self->{'data'}->{'competition_voting'}->id,
 				'image_id' => $image->id,
+				defined $person_id ? ('person_id' => $person_id) : (),
 			});
 			if (! $count) {
 				return 'red';
