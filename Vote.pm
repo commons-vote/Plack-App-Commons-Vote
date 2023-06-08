@@ -257,6 +257,9 @@ sub _json {
 sub _prepare_app {
 	my $self = shift;
 
+	# Inherite defaults.
+	$self->SUPER::_prepare_app;
+
 	# Wikimedia Commons link object.
 	$self->{'_link'} = Commons::Link->new;
 
