@@ -20,7 +20,7 @@ use Data::Commons::Vote::PersonRole;
 use Data::Commons::Vote::Theme;
 use Data::Commons::Vote::ThemeImage;
 use Data::FormValidator;
-use Data::HTML::A;
+use Data::HTML::Element::A;
 use Data::Printer return_value => 'dump';
 use Error::Pure qw(err);
 use File::Spec::Functions qw(splitdir);
@@ -1407,7 +1407,7 @@ sub _process_actions {
 					['e', 'a'],
 				);
 				push @{$self->{'data'}->{'validation_report'}}, [
-					Data::HTML::A->new(
+					Data::HTML::Element::A->new(
 						'data' => $image->image,
 						'url' => $self->{'_link'}->mw_file_link($image->image),
 					),
@@ -1431,7 +1431,7 @@ sub _process_actions {
 				[
 					$_->created_at->stringify,
 					$_->log_type->type,
-					Data::HTML::A->new(
+					Data::HTML::Element::A->new(
 						'data' => 'View log record',
 						'url' => '/log/'.$_->id,
 					),

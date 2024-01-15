@@ -24,6 +24,7 @@ requires 'Commons::Link' => 0;
 requires 'Commons::Vote::Fetcher' => 0;
 requires 'Data::Commons::Vote::Competition' => 0;
 requires 'Data::FormValidator' => 0;
+requires 'Data::HTML::Element::A' => 0;
 requires 'Data::Printer' => 0;
 requires 'English' => 0;
 requires 'Error::Pure' => 0;
